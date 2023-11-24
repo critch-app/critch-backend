@@ -14,7 +14,7 @@ type User struct {
 	Status    string    `json:"status" gorm:"not null;check:status IN ('active', 'away')"`
 	Photo     string    `json:"photo"`
 	Phone     string    `json:"phone" gorm:"unique;not null"`
-	Timezone  string    `json:"timezone" gorm:"not null"`
+	TimeZone  string    `json:"time_zone" gorm:"not null"`
 	LastSeen  string    `json:"last_seen" gorm:"not null"`
 	CreatedAt time.Time `json:"created_at"`
 
