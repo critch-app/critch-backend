@@ -15,7 +15,7 @@ type User struct {
 	Photo     string    `json:"photo"`
 	Phone     string    `json:"phone" gorm:"unique;not null"`
 	TimeZone  string    `json:"time_zone" gorm:"not null"`
-	LastSeen  string    `json:"last_seen" gorm:"not null"`
+	LastSeen  string    `json:"last_seen"`
 	CreatedAt time.Time `json:"created_at"`
 
 	DirectMessages []DirectMessage `gorm:"foreignKey:SenderID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
