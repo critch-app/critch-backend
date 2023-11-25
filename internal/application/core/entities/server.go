@@ -13,5 +13,5 @@ type Server struct {
 	CreatedAt   time.Time `json:"created_at"`
 
 	Channels []ServerChannel `gorm:"foreignKey:ServerID;references:ID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
-	Servers  []User          `gorm:"many2many:server_members;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
+	Members  []User          `gorm:"many2many:server_members;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
 }
