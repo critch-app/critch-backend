@@ -27,7 +27,7 @@ func (dbA *Adapter) GetUserByEmail(email string) (*entities.User, error) {
 }
 
 func (dbA *Adapter) GetAllUsers(offset, limit int) (*[]entities.User, error) {
-	var user *[]entities.User
+	user := &[]entities.User{}
 	err := dbA.db.Offset(offset).Limit(limit).Find(user).Error
 
 	return user, err

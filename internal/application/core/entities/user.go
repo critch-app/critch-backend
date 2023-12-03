@@ -11,7 +11,7 @@ type User struct {
 	LastName  string    `json:"last_name" gorm:"not null"`
 	Email     string    `json:"email" gorm:"unique;not null"`
 	Password  string    `json:"password" gorm:"not null"`
-	Status    string    `json:"status" gorm:"not null;check:status IN ('active', 'away')"`
+	Status    string    `json:"status" gorm:"not null;check:status IN ('active', 'away');default:active"`
 	Photo     string    `json:"photo"`
 	Phone     string    `json:"phone" gorm:"unique;not null"`
 	TimeZone  string    `json:"time_zone" gorm:"not null"`

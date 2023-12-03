@@ -18,14 +18,14 @@ func (dbA *Adapter) GetServer(id uuid.UUID) (*entities.Server, error) {
 }
 
 func (dbA *Adapter) GetServerByName(name string) (*entities.Server, error) {
-	var server *entities.Server
+	server := &entities.Server{}
 	err := dbA.db.First(server, "name = ?", name).Error
 
 	return server, err
 }
 
 func (dbA *Adapter) GetAllServers(offset, limit int) (*[]entities.Server, error) {
-	var server *[]entities.Server
+	server := &[]entities.Server{}
 	err := dbA.db.Offset(offset).Limit(limit).Find(server).Error
 
 	return server, err
@@ -40,7 +40,7 @@ func (dbA *Adapter) UpdateServer(server *entities.Server) error {
 }
 
 func (dbA *Adapter) GetServerMembers(serverId uuid.UUID, offset, limit int) (*[]entities.ServerMember, error) {
-	var members *[]entities.ServerMember
+	members := &[]entities.ServerMember{}
 	err := dbA.db.Offset(offset).Limit(limit).Select("user_id", "role", "joined_at").
 		Find(members, "server_id = ?", serverId).Error
 
@@ -66,7 +66,7 @@ func (dbA *Adapter) RemoveServerMember(serverId, userId uuid.UUID) error {
 }
 
 func (dbA *Adapter) GetServerChannels(serverId uuid.UUID, offset, limit int) (*[]entities.ServerChannel, error) {
-	var channels *[]entities.ServerChannel
+	channels := &[]entities.ServerChannel{}
 	err := dbA.db.Offset(offset).Limit(limit).Omit("server_id").
 		Find(channels, "server_id = ?", serverId).Error
 

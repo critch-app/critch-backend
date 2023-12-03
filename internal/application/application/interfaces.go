@@ -1,14 +1,13 @@
-package ports
+package application
 
 import (
 	"github.com/google/uuid"
 	"github.com/mohamed-sawy/critch-backend/internal/application/core/entities"
 )
 
-type DB interface {
-	Migrate(models ...any) error
-
-	CreateUser(user *entities.User) error
+type AppI interface {
+	Login(username, password string) error
+	Signup(user *entities.User) error
 	GetUser(id uuid.UUID) (*entities.User, error)
 	GetUserByEmail(email string) (*entities.User, error)
 	GetAllUsers(offset, limit int) (*[]entities.User, error)
