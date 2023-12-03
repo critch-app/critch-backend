@@ -35,7 +35,7 @@ type DB interface {
 	GetChannelMembers(channelMembers any, channelId uuid.UUID, offset, limit int) error
 	AddChannelMember(channelMember any) error
 	RemoveChannelMember(channelMember any) error
-	GetChannelMessages(channelMessages any, offset, limit int) error
+	GetChannelMessages(channelMessages any, channelId uuid.UUID, offset, limit int) error
 	DeleteChannel(channel any) error
 
 	GetMessage(msg any) error

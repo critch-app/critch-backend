@@ -70,13 +70,14 @@ func (dbA *Adapter) RemoveChannelMember(channelMember any) error {
 	return dbA.db.Delete(channelMember).Error
 }
 
-func (dbA *Adapter) GetChannelMessages(channelMessages any, offset, limit int) error {
+func (dbA *Adapter) GetChannelMessages(channelMessages any, channelId uuid.UUID, offset, limit int) error {
 	err := validateChannelMessageType(channelMessages)
 	if err != nil {
 		return err
 	}
 
-	return dbA.db.Offset(offset).Limit(limit).Order("created_at").Find(channelMessages).Error
+	return dbA.db.Offset(offset).Limit(limit).Order("created_at").
+		Find(channelMessages, "channel_id = ?", channelId).Error
 }
 
 func (dbA *Adapter) DeleteChannel(channel any) error {
