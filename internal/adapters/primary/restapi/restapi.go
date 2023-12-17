@@ -13,7 +13,10 @@ type Adapter struct {
 
 func NewAdapter(app application.AppI) *Adapter {
 	router := gin.Default()
-	router.Use(cors.Default())
+	config := cors.DefaultConfig()
+	config.AllowAllOrigins = true
+	config.AllowHeaders = []string{"Authorization", "Content-Type"}
+	router.Use(cors.New(config))
 
 	api := &Adapter{app: app, router: router}
 	api.setupRouting()
