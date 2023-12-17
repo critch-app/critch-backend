@@ -16,7 +16,7 @@ type AppI interface {
 	GetUserDMChannels(userId uuid.UUID, offset, limit int) (*[]entities.DMChannelMember, error)
 	DeleteUser(id uuid.UUID) error
 
-	CreateServer(server *entities.Server) error
+	CreateServer(server *entities.Server, OwnerID uuid.UUID) error
 	GetServer(id uuid.UUID) (*entities.Server, error)
 	GetServerByName(name string) (*entities.Server, error)
 	GetAllServers(offset, limit int) (*[]entities.Server, error)

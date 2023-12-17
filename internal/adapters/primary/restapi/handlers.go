@@ -193,15 +193,27 @@ func (api *Adapter) getAllServers(ctx *gin.Context) {
 }
 
 func (api *Adapter) createServer(ctx *gin.Context) {
-	server := &entities.Server{}
+	serverRequest := &createServerRequest{}
 
-	err := ctx.ShouldBindJSON(server)
+	err := ctx.ShouldBindJSON(serverRequest)
 	if err != nil {
 		reportError(ctx, http.StatusBadRequest, err)
 		return
 	}
 
-	err = api.app.CreateServer(server)
+	OwnerID, err := uuid.Parse(serverRequest.OwnerID)
+	if err != nil {
+		reportError(ctx, http.StatusBadRequest, err)
+		return
+	}
+
+	server := &entities.Server{
+		Name:        serverRequest.Name,
+		Description: serverRequest.Description,
+		Photo:       serverRequest.Photo,
+	}
+
+	err = api.app.CreateServer(server, OwnerID)
 	if err != nil {
 		reportError(ctx, http.StatusInternalServerError, err)
 		return

@@ -63,8 +63,19 @@ func (app *App) DeleteUser(id uuid.UUID) error {
 	return app.db.DeleteUser(id)
 }
 
-func (app *App) CreateServer(server *entities.Server) error {
-	return app.db.CreateServer(server)
+func (app *App) CreateServer(server *entities.Server, OwnerID uuid.UUID) error {
+	err := app.db.CreateServer(server)
+	if err != nil {
+		return err
+	}
+
+	err = app.db.AddServerMember(&entities.ServerMember{
+		ServerID: server.ID,
+		UserID:   OwnerID,
+		Role:     "owner",
+	})
+
+	return err
 }
 
 func (app *App) GetServer(id uuid.UUID) (*entities.Server, error) {
@@ -88,7 +99,11 @@ func (app *App) GetServerMembers(serverId uuid.UUID, offset, limit int) (*[]enti
 }
 
 func (app *App) AddServerMember(serverId, userId uuid.UUID) error {
-	return app.db.AddServerMember(serverId, userId)
+	return app.db.AddServerMember(&entities.ServerMember{
+		ServerID: serverId,
+		UserID:   userId,
+		Role:     "member",
+	})
 }
 
 func (app *App) RemoveServerMember(serverId, userId uuid.UUID) error {
