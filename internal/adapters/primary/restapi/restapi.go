@@ -1,6 +1,7 @@
 package restapi
 
 import (
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/mohamed-sawy/critch-backend/internal/application/application"
 )
@@ -12,6 +13,7 @@ type Adapter struct {
 
 func NewAdapter(app application.AppI) *Adapter {
 	router := gin.Default()
+	router.Use(cors.Default())
 
 	api := &Adapter{app: app, router: router}
 	api.setupRouting()
