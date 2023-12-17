@@ -10,7 +10,24 @@ import (
 )
 
 func (api *Adapter) login(ctx *gin.Context) {
-	//TODO: implement this
+	credentials := &loginRequest{}
+
+	err := ctx.ShouldBindJSON(credentials)
+	if err != nil {
+		reportError(ctx, http.StatusBadRequest, err)
+		return
+	}
+
+	token, userId, err := api.app.Login(credentials.Email, credentials.Password)
+	if err != nil {
+		reportError(ctx, http.StatusInternalServerError, err)
+		return
+	}
+
+	ctx.JSON(http.StatusCreated, gin.H{
+		"token":   token,
+		"user_id": userId,
+	})
 }
 
 func (api *Adapter) signup(ctx *gin.Context) {
