@@ -6,7 +6,7 @@ import (
 )
 
 type AppI interface {
-	Login(username, password string) error
+	Login(email, password string) (string, uuid.UUID, error)
 	Signup(user *entities.User) error
 	GetUser(id uuid.UUID) (*entities.User, error)
 	GetUserByEmail(email string) (*entities.User, error)
@@ -16,7 +16,7 @@ type AppI interface {
 	GetUserDMChannels(userId uuid.UUID, offset, limit int) (*[]entities.DMChannelMember, error)
 	DeleteUser(id uuid.UUID) error
 
-	CreateServer(server *entities.Server) error
+	CreateServer(server *entities.Server, OwnerID uuid.UUID) error
 	GetServer(id uuid.UUID) (*entities.Server, error)
 	GetServerByName(name string) (*entities.Server, error)
 	GetAllServers(offset, limit int) (*[]entities.Server, error)
@@ -40,4 +40,6 @@ type AppI interface {
 	GetMessage(msg any) error
 	UpdateMessage(msg any) error
 	DeleteMessage(msg any) error
+
+	ValidateJWTToken(tokenString string) (uuid.UUID, error)
 }

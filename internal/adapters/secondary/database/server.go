@@ -7,6 +7,8 @@ import (
 )
 
 func (dbA *Adapter) CreateServer(server *entities.Server) error {
+	server.ID = uuid.New()
+
 	return dbA.db.Create(server).Error
 }
 
@@ -47,12 +49,7 @@ func (dbA *Adapter) GetServerMembers(serverId uuid.UUID, offset, limit int) (*[]
 	return members, err
 }
 
-func (dbA *Adapter) AddServerMember(serverId, userId uuid.UUID) error {
-	member := &entities.ServerMember{
-		ServerID: serverId,
-		UserID:   userId,
-	}
-
+func (dbA *Adapter) AddServerMember(member *entities.ServerMember) error {
 	return dbA.db.Create(member).Error
 }
 

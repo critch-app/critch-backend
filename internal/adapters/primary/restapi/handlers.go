@@ -1,7 +1,6 @@
 package restapi
 
 import (
-	"errors"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/mohamed-sawy/critch-backend/internal/application/core/entities"
@@ -11,7 +10,24 @@ import (
 )
 
 func (api *Adapter) login(ctx *gin.Context) {
-	//TODO: implement this
+	credentials := &loginRequest{}
+
+	err := ctx.ShouldBindJSON(credentials)
+	if err != nil {
+		reportError(ctx, http.StatusBadRequest, err)
+		return
+	}
+
+	token, userId, err := api.app.Login(credentials.Email, credentials.Password)
+	if err != nil {
+		reportError(ctx, http.StatusInternalServerError, err)
+		return
+	}
+
+	ctx.JSON(http.StatusCreated, gin.H{
+		"token":   token,
+		"user_id": userId,
+	})
 }
 
 func (api *Adapter) signup(ctx *gin.Context) {
@@ -25,7 +41,7 @@ func (api *Adapter) signup(ctx *gin.Context) {
 
 	err = api.app.Signup(user)
 	if err != nil {
-		reportError(ctx, http.StatusInternalServerError, errors.New("couldn't process the request"))
+		reportError(ctx, http.StatusInternalServerError, err)
 		return
 	}
 
@@ -37,7 +53,7 @@ func (api *Adapter) getAllUsers(ctx *gin.Context) {
 
 	users, err := api.app.GetAllUsers(offset, limit)
 	if err != nil {
-		reportError(ctx, http.StatusInternalServerError, errors.New("couldn't process the request"))
+		reportError(ctx, http.StatusInternalServerError, err)
 		return
 	}
 
@@ -58,7 +74,7 @@ func (api *Adapter) getUser(ctx *gin.Context) {
 
 	user, err := api.app.GetUser(userId)
 	if err != nil {
-		reportError(ctx, http.StatusInternalServerError, errors.New("couldn't process the request"))
+		reportError(ctx, http.StatusInternalServerError, err)
 		return
 	}
 
@@ -74,7 +90,7 @@ func (api *Adapter) deleteUser(ctx *gin.Context) {
 
 	err = api.app.DeleteUser(userId)
 	if err != nil {
-		reportError(ctx, http.StatusInternalServerError, errors.New("couldn't process the request"))
+		reportError(ctx, http.StatusInternalServerError, err)
 		return
 	}
 
@@ -100,7 +116,7 @@ func (api *Adapter) updateUser(ctx *gin.Context) {
 
 	err = api.app.UpdateUser(user)
 	if err != nil {
-		reportError(ctx, http.StatusInternalServerError, errors.New("couldn't process the request"))
+		reportError(ctx, http.StatusInternalServerError, err)
 		return
 	}
 
@@ -118,7 +134,7 @@ func (api *Adapter) getUserServers(ctx *gin.Context) {
 
 	servers, err := api.app.GetUserServers(userId, offset, limit)
 	if err != nil {
-		reportError(ctx, http.StatusInternalServerError, errors.New("couldn't process the request"))
+		reportError(ctx, http.StatusInternalServerError, err)
 		return
 	}
 
@@ -145,7 +161,7 @@ func (api *Adapter) getUserChannels(ctx *gin.Context) {
 
 	channels, err := api.app.GetUserDMChannels(userId, offset, limit)
 	if err != nil {
-		reportError(ctx, http.StatusInternalServerError, errors.New("couldn't process the request"))
+		reportError(ctx, http.StatusInternalServerError, err)
 		return
 	}
 
@@ -164,7 +180,7 @@ func (api *Adapter) getAllServers(ctx *gin.Context) {
 
 	servers, err := api.app.GetAllServers(offset, limit)
 	if err != nil {
-		reportError(ctx, http.StatusInternalServerError, errors.New("couldn't process the request"))
+		reportError(ctx, http.StatusInternalServerError, err)
 		return
 	}
 
@@ -177,17 +193,29 @@ func (api *Adapter) getAllServers(ctx *gin.Context) {
 }
 
 func (api *Adapter) createServer(ctx *gin.Context) {
-	server := &entities.Server{}
+	serverRequest := &createServerRequest{}
 
-	err := ctx.ShouldBindJSON(server)
+	err := ctx.ShouldBindJSON(serverRequest)
 	if err != nil {
 		reportError(ctx, http.StatusBadRequest, err)
 		return
 	}
 
-	err = api.app.CreateServer(server)
+	OwnerID, err := uuid.Parse(serverRequest.OwnerID)
 	if err != nil {
-		reportError(ctx, http.StatusInternalServerError, errors.New("couldn't process the request"))
+		reportError(ctx, http.StatusBadRequest, err)
+		return
+	}
+
+	server := &entities.Server{
+		Name:        serverRequest.Name,
+		Description: serverRequest.Description,
+		Photo:       serverRequest.Photo,
+	}
+
+	err = api.app.CreateServer(server, OwnerID)
+	if err != nil {
+		reportError(ctx, http.StatusInternalServerError, err)
 		return
 	}
 
@@ -203,7 +231,7 @@ func (api *Adapter) getServer(ctx *gin.Context) {
 
 	server, err := api.app.GetServer(serverId)
 	if err != nil {
-		reportError(ctx, http.StatusInternalServerError, errors.New("couldn't process the request"))
+		reportError(ctx, http.StatusInternalServerError, err)
 		return
 	}
 
@@ -219,7 +247,7 @@ func (api *Adapter) deleteServer(ctx *gin.Context) {
 
 	err = api.app.DeleteServer(serverId)
 	if err != nil {
-		reportError(ctx, http.StatusInternalServerError, errors.New("couldn't process the request"))
+		reportError(ctx, http.StatusInternalServerError, err)
 		return
 	}
 
@@ -245,7 +273,7 @@ func (api *Adapter) updateServer(ctx *gin.Context) {
 
 	err = api.app.UpdateServer(server)
 	if err != nil {
-		reportError(ctx, http.StatusInternalServerError, errors.New("couldn't process the request"))
+		reportError(ctx, http.StatusInternalServerError, err)
 		return
 	}
 
@@ -263,7 +291,7 @@ func (api *Adapter) getServerMembers(ctx *gin.Context) {
 
 	members, err := api.app.GetServerMembers(serverId, offset, limit)
 	if err != nil {
-		reportError(ctx, http.StatusInternalServerError, errors.New("couldn't process the request"))
+		reportError(ctx, http.StatusInternalServerError, err)
 		return
 	}
 
@@ -294,7 +322,7 @@ func (api *Adapter) addServerMember(ctx *gin.Context) {
 
 	err = api.app.AddServerMember(serverId, userId)
 	if err != nil {
-		reportError(ctx, http.StatusInternalServerError, errors.New("couldn't process the request"))
+		reportError(ctx, http.StatusInternalServerError, err)
 		return
 	}
 
@@ -316,7 +344,7 @@ func (api *Adapter) removeServerMember(ctx *gin.Context) {
 
 	err = api.app.RemoveServerMember(serverId, userId)
 	if err != nil {
-		reportError(ctx, http.StatusInternalServerError, errors.New("couldn't process the request"))
+		reportError(ctx, http.StatusInternalServerError, err)
 		return
 	}
 
@@ -334,7 +362,7 @@ func (api *Adapter) getServerChannels(ctx *gin.Context) {
 
 	channels, err := api.app.GetServerChannels(serverId, offset, limit)
 	if err != nil {
-		reportError(ctx, http.StatusInternalServerError, errors.New("couldn't process the request"))
+		reportError(ctx, http.StatusInternalServerError, err)
 		return
 	}
 
@@ -361,7 +389,7 @@ func (api *Adapter) getAllChannels(ctx *gin.Context) {
 
 	err := api.app.GetAllChannels(channels, offset, limit)
 	if err != nil {
-		reportError(ctx, http.StatusInternalServerError, errors.New("couldn't process the request"))
+		reportError(ctx, http.StatusInternalServerError, err)
 		return
 	}
 
@@ -393,7 +421,7 @@ func (api *Adapter) createChannel(ctx *gin.Context) {
 
 	err = api.app.CreateChannel(channel)
 	if err != nil {
-		reportError(ctx, http.StatusInternalServerError, errors.New("couldn't process the request"))
+		reportError(ctx, http.StatusInternalServerError, err)
 		return
 	}
 
@@ -417,7 +445,7 @@ func (api *Adapter) getChannel(ctx *gin.Context) {
 
 	err = api.app.GetChannel(channel)
 	if err != nil {
-		reportError(ctx, http.StatusInternalServerError, errors.New("couldn't process the request"))
+		reportError(ctx, http.StatusInternalServerError, err)
 		return
 	}
 
@@ -441,7 +469,7 @@ func (api *Adapter) deleteChannel(ctx *gin.Context) {
 
 	err = api.app.DeleteChannel(channel)
 	if err != nil {
-		reportError(ctx, http.StatusInternalServerError, errors.New("couldn't process the request"))
+		reportError(ctx, http.StatusInternalServerError, err)
 		return
 	}
 
@@ -476,7 +504,7 @@ func (api *Adapter) updateChannel(ctx *gin.Context) {
 
 	err = api.app.UpdateChannel(channel)
 	if err != nil {
-		reportError(ctx, http.StatusInternalServerError, errors.New("couldn't process the request"))
+		reportError(ctx, http.StatusInternalServerError, err)
 		return
 	}
 
@@ -502,7 +530,7 @@ func (api *Adapter) getChannelMembers(ctx *gin.Context) {
 
 	err = api.app.GetChannelMembers(channelMembers, channelId, offset, limit)
 	if err != nil {
-		reportError(ctx, http.StatusInternalServerError, errors.New("couldn't process the request"))
+		reportError(ctx, http.StatusInternalServerError, err)
 		return
 	}
 
@@ -540,7 +568,7 @@ func (api *Adapter) addChannelMember(ctx *gin.Context) {
 
 	err = api.app.AddChannelMember(channelMember)
 	if err != nil {
-		reportError(ctx, http.StatusInternalServerError, errors.New("couldn't process the request"))
+		reportError(ctx, http.StatusInternalServerError, err)
 		return
 	}
 
@@ -576,7 +604,7 @@ func (api *Adapter) removeChannelMember(ctx *gin.Context) {
 
 	err = api.app.RemoveChannelMember(channelMember)
 	if err != nil {
-		reportError(ctx, http.StatusInternalServerError, errors.New("couldn't process the request"))
+		reportError(ctx, http.StatusInternalServerError, err)
 		return
 	}
 
@@ -602,7 +630,7 @@ func (api *Adapter) getChannelMessages(ctx *gin.Context) {
 
 	err = api.app.GetChannelMessages(channelMessages, channelId, offset, limit)
 	if err != nil {
-		reportError(ctx, http.StatusInternalServerError, errors.New("couldn't process the request"))
+		reportError(ctx, http.StatusInternalServerError, err)
 		return
 	}
 
@@ -628,7 +656,7 @@ func (api *Adapter) getMessage(ctx *gin.Context) {
 
 	err = api.app.GetMessage(message)
 	if err != nil {
-		reportError(ctx, http.StatusInternalServerError, errors.New("couldn't process the request"))
+		reportError(ctx, http.StatusInternalServerError, err)
 		return
 	}
 
@@ -652,7 +680,7 @@ func (api *Adapter) deleteMessage(ctx *gin.Context) {
 
 	err = api.app.DeleteMessage(message)
 	if err != nil {
-		reportError(ctx, http.StatusInternalServerError, errors.New("couldn't process the request"))
+		reportError(ctx, http.StatusInternalServerError, err)
 		return
 	}
 
@@ -687,7 +715,7 @@ func (api *Adapter) updateMessage(ctx *gin.Context) {
 
 	err = api.app.UpdateMessage(message)
 	if err != nil {
-		reportError(ctx, http.StatusInternalServerError, errors.New("couldn't process the request"))
+		reportError(ctx, http.StatusInternalServerError, err)
 		return
 	}
 
