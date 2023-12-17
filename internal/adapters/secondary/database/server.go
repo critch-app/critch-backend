@@ -7,6 +7,8 @@ import (
 )
 
 func (dbA *Adapter) CreateServer(server *entities.Server) error {
+	server.ID = uuid.New()
+
 	return dbA.db.Create(server).Error
 }
 
