@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/joho/godotenv"
-	"github.com/mohamed-sawy/critch-backend/internal/adapters/primary/restapi"
+	"github.com/mohamed-sawy/critch-backend/internal/adapters/primary/api"
 	"github.com/mohamed-sawy/critch-backend/internal/adapters/secondary/database"
 	"github.com/mohamed-sawy/critch-backend/internal/application/application"
 	"github.com/mohamed-sawy/critch-backend/internal/ports"
@@ -42,7 +42,7 @@ func main() {
 
 	app = application.NewApp(dbAdapter)
 
-	server = restapi.NewAdapter(app)
+	server = api.NewAdapter(app)
 
 	err = server.Run()
 	if err != nil {

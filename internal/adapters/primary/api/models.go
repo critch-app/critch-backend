@@ -1,4 +1,4 @@
-package restapi
+package api
 
 type loginRequest struct {
 	Email    string `json:"email" binding:"required"`
