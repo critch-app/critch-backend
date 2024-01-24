@@ -3,6 +3,7 @@ package application
 import (
 	"github.com/google/uuid"
 	"github.com/mohamed-sawy/critch-backend/internal/application/core/entities"
+	"github.com/mohamed-sawy/critch-backend/internal/application/core/msgsrvc"
 )
 
 type AppI interface {
@@ -42,4 +43,10 @@ type AppI interface {
 	DeleteMessage(msg any) error
 
 	ValidateJWTToken(tokenString string) (uuid.UUID, error)
+
+	SendMessages(incomingMessage *msgsrvc.IncomingMessage) error
+	ReceiveMessages(client *msgsrvc.Client) (any, bool)
+
+	ConnectWebsocket(clientId uuid.UUID) (*msgsrvc.Client, error)
+	DisconnectWebsocket(client *msgsrvc.Client)
 }
