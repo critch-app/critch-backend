@@ -6,6 +6,15 @@ import (
 	"github.com/mohamed-sawy/critch-backend/internal/application/core/entities"
 )
 
+func (dbA *Adapter) CreateMessage(msg any) error {
+	err := addMessageID(msg)
+	if err != nil {
+		return err
+	}
+
+	return dbA.db.Create(msg).Error
+}
+
 func (dbA *Adapter) GetMessage(msg any) error {
 	err := checkMessageID(msg)
 	if err != nil {
@@ -33,12 +42,30 @@ func (dbA *Adapter) DeleteMessage(msg any) error {
 	return dbA.db.Delete(msg).Error
 }
 
+func addMessageID(msg any) error {
+	err := validateMessageType(msg)
+	if err != nil {
+		return err
+	}
+
+	switch msg.(type) {
+	case *entities.ServerMessage:
+		messageModel := msg.(*entities.ServerMessage)
+		messageModel.ID = uuid.New()
+	case *entities.DirectMessage:
+		messageModel := msg.(*entities.DirectMessage)
+		messageModel.ID = uuid.New()
+	}
+
+	return nil
+}
+
 func validateMessageType(message any) error {
 	switch message.(type) {
 	case *entities.ServerMessage:
 	case *entities.DirectMessage:
 	default:
-		return errors.New("channel must be of type *ServerChannel or *DMChannel")
+		return errors.New("message must be of type *ServerMessage or *DirectMessage")
 	}
 
 	return nil
