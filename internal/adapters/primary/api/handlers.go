@@ -552,11 +552,19 @@ func (api *Adapter) addChannelMember(ctx *gin.Context) {
 		return
 	}
 
-	_, isServerChannel := ctx.GetQuery("isServerChannel")
+	serverId, exists := ctx.GetQuery("server_id")
+
 	var channelMember any
-	if isServerChannel {
+	if exists {
+		uServerId, err := uuid.Parse(serverId)
+		if err != nil {
+			reportError(ctx, http.StatusBadRequest, err)
+			return
+		}
+
 		channelMember = &entities.ServerChannelMember{
 			ChannelID: channelId,
+			ServerID:  uServerId,
 			UserID:    userId,
 		}
 	} else {
@@ -588,11 +596,19 @@ func (api *Adapter) removeChannelMember(ctx *gin.Context) {
 		return
 	}
 
-	_, isServerChannel := ctx.GetQuery("isServerChannel")
+	serverId, exists := ctx.GetQuery("server_id")
+
 	var channelMember any
-	if isServerChannel {
+	if exists {
+		uServerId, err := uuid.Parse(serverId)
+		if err != nil {
+			reportError(ctx, http.StatusBadRequest, err)
+			return
+		}
+
 		channelMember = &entities.ServerChannelMember{
 			ChannelID: channelId,
+			ServerID:  uServerId,
 			UserID:    userId,
 		}
 	} else {
@@ -784,7 +800,7 @@ func getResponseChannel(channel any, isServerChannel bool) gin.H {
 		channelModel := channel.(*entities.ServerChannel)
 		return gin.H{
 			"id":          channelModel.ID,
-			"server_id":   channelModel.CreatedAt,
+			"server_id":   channelModel.ServerID,
 			"name":        channelModel.Name,
 			"description": channelModel.Description,
 			"created_at":  channelModel.CreatedAt,
