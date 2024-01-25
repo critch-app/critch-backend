@@ -238,3 +238,7 @@ func (app *App) DisconnectWebsocket(client *msgsrvc.Client) {
 
 	close(client.MessagingChannel)
 }
+
+func (app *App) GetServerMemberRole(serverId, userId uuid.UUID) (string, error) {
+	return app.db.GetServerMemberRole(serverId, userId)
+}

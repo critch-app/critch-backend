@@ -121,3 +121,14 @@ func (dbA *Adapter) DeleteUser(userId uuid.UUID) error {
 
 	return dbA.db.Delete(user).Error
 }
+
+func (dbA *Adapter) GetServerMemberRole(serverId, userId uuid.UUID) (string, error) {
+	user := &entities.ServerMember{
+		ServerID: serverId,
+		UserID:   userId,
+	}
+
+	err := dbA.db.First(user).Error
+
+	return user.Role, err
+}

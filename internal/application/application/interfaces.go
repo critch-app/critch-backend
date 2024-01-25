@@ -49,4 +49,6 @@ type AppI interface {
 
 	ConnectWebsocket(clientId uuid.UUID) (*msgsrvc.Client, error)
 	DisconnectWebsocket(client *msgsrvc.Client)
+
+	GetServerMemberRole(serverId, userId uuid.UUID) (string, error)
 }

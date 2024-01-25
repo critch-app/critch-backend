@@ -44,4 +44,6 @@ type DB interface {
 	GetMessage(msg any) error
 	UpdateMessage(msg any) error
 	DeleteMessage(msg any) error
+
+	GetServerMemberRole(serverId, userId uuid.UUID) (string, error)
 }

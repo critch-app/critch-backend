@@ -726,6 +726,30 @@ func (api *Adapter) updateMessage(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, getResponseMessage(message, isServerMessage))
 }
 
+func (api *Adapter) getServerMemberRole(ctx *gin.Context) {
+	serverId, err := uuid.Parse(ctx.Param("server-id"))
+	if err != nil {
+		reportError(ctx, http.StatusBadRequest, err)
+		return
+	}
+
+	userId, err := uuid.Parse(ctx.Param("user-id"))
+	if err != nil {
+		reportError(ctx, http.StatusBadRequest, err)
+		return
+	}
+
+	role, err := api.app.GetServerMemberRole(serverId, userId)
+	if err != nil {
+		reportError(ctx, http.StatusNotFound, err)
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{
+		"role": role,
+	})
+}
+
 func getPagination(ctx *gin.Context) (offset int, limit int) {
 	const MIN_OFFSET = 0
 	const DEFAULT_OFFSET = 0

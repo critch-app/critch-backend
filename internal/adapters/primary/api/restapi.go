@@ -68,4 +68,6 @@ func (api *Adapter) setupRouting() {
 	authorized.PATCH("/messages/:message-id", api.updateMessage)
 
 	authorized.GET("/messaging-service", api.connectWebsocket)
+
+	authorized.GET("/server-role", api.getServerMemberRole)
 }
