@@ -15,6 +15,8 @@ type DB interface {
 	UpdateUser(user *entities.User) error
 	GetUserServers(userId uuid.UUID, offset, limit int) (*[]entities.ServerMember, error)
 	GetUserDMChannels(userId uuid.UUID, offset, limit int) (*[]entities.DMChannelMember, error)
+	GetUserChannelIds(userId uuid.UUID) (*[]uuid.UUID, error)
+	GetUserServerIds(userId uuid.UUID) (*[]uuid.UUID, error) //TODO: implement this
 	DeleteUser(id uuid.UUID) error
 
 	CreateServer(server *entities.Server) error
@@ -38,6 +40,7 @@ type DB interface {
 	GetChannelMessages(channelMessages any, channelId uuid.UUID, offset, limit int) error
 	DeleteChannel(channel any) error
 
+	CreateMessage(msg any) error
 	GetMessage(msg any) error
 	UpdateMessage(msg any) error
 	DeleteMessage(msg any) error

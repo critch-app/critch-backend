@@ -57,6 +57,41 @@ func (dbA *Adapter) GetUserDMChannels(userId uuid.UUID, offset, limit int) (*[]e
 	return channels, err
 }
 
+func (dbA *Adapter) GetUserChannelIds(userId uuid.UUID) (*[]uuid.UUID, error) {
+	dmChannels := &[]entities.DMChannelMember{}
+	err := dbA.db.Select("channel_id").
+		Find(dmChannels, "user_id = ?", userId).Error
+
+	serverChannels := &[]entities.ServerChannelMember{}
+	err = dbA.db.Select("channel_id").
+		Find(serverChannels, "user_id = ?", userId).Error
+
+	ids := make([]uuid.UUID, len(*dmChannels)+len(*serverChannels))
+	for idx, channel := range *dmChannels {
+		ids[idx] = channel.ChannelID
+	}
+
+	offset := len(*dmChannels)
+	for idx, channel := range *serverChannels {
+		ids[offset+idx] = channel.ChannelID
+	}
+
+	return &ids, err
+}
+
+func (dbA *Adapter) GetUserServerIds(userId uuid.UUID) (*[]uuid.UUID, error) {
+	servers := &[]entities.ServerMember{}
+	err := dbA.db.Select("server_id").
+		Find(servers, "user_id = ?", userId).Error
+
+	ids := make([]uuid.UUID, len(*servers))
+	for idx, server := range *servers {
+		ids[idx] = server.ServerID
+	}
+
+	return &ids, err
+}
+
 func (dbA *Adapter) DeleteUser(userId uuid.UUID) error {
 	user := &entities.User{ID: userId}
 

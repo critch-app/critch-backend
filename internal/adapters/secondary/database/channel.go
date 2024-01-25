@@ -43,7 +43,7 @@ func (dbA *Adapter) UpdateChannel(channel any) error {
 }
 
 func (dbA *Adapter) GetChannelMembers(channelMembers any, channelId uuid.UUID, offset, limit int) error {
-	err := validateChannelMembersType(channelMembers)
+	err := validateChannelMembersArrayType(channelMembers)
 	if err != nil {
 		return err
 	}
@@ -112,6 +112,16 @@ func validateChannelArrayType(channels any) error {
 }
 
 func validateChannelMembersType(members any) error {
+	switch members.(type) {
+	case *entities.ServerChannelMember:
+	case *entities.DMChannelMember:
+	default:
+		return errors.New("channels must be of type *[]ServerChannelMember or *[]DMChannelMember")
+	}
+
+	return nil
+}
+func validateChannelMembersArrayType(members any) error {
 	switch members.(type) {
 	case *[]entities.ServerChannelMember:
 	case *[]entities.DMChannelMember:

@@ -3,9 +3,10 @@ package main
 import (
 	"fmt"
 	"github.com/joho/godotenv"
-	"github.com/mohamed-sawy/critch-backend/internal/adapters/primary/restapi"
+	"github.com/mohamed-sawy/critch-backend/internal/adapters/primary/api"
 	"github.com/mohamed-sawy/critch-backend/internal/adapters/secondary/database"
 	"github.com/mohamed-sawy/critch-backend/internal/application/application"
+	"github.com/mohamed-sawy/critch-backend/internal/application/core/msgsrvc"
 	"github.com/mohamed-sawy/critch-backend/internal/ports"
 	"log"
 	"os"
@@ -29,9 +30,10 @@ func main() {
 		DBHOST, DBUSER, DBPASS, DBNAME, DBPORT)
 
 	var (
-		dbAdapter ports.DB
-		app       application.AppI
-		server    ports.RESTAPI
+		dbAdapter        ports.DB
+		app              application.AppI
+		messagingService *msgsrvc.MessagingService
+		server           ports.RESTAPI
 	)
 
 	dbAdapter, err = database.NewAdapter(dsn)
@@ -40,9 +42,13 @@ func main() {
 		log.Fatalf("DB Connection Failed: %s", err)
 	}
 
-	app = application.NewApp(dbAdapter)
+	messagingService = msgsrvc.NewService()
 
-	server = restapi.NewAdapter(app)
+	app = application.NewApp(dbAdapter, messagingService)
+
+	go messagingService.Run()
+
+	server = api.NewAdapter(app)
 
 	err = server.Run()
 	if err != nil {

@@ -1,4 +1,4 @@
-package restapi
+package api
 
 import (
 	"github.com/gin-contrib/cors"
@@ -66,4 +66,6 @@ func (api *Adapter) setupRouting() {
 	authorized.GET("/messages/:message-id", api.getMessage)
 	authorized.DELETE("/messages/:message-id", api.deleteMessage)
 	authorized.PATCH("/messages/:message-id", api.updateMessage)
+
+	authorized.GET("/messaging-service", api.connectWebsocket)
 }

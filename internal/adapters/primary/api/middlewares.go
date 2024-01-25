@@ -1,4 +1,4 @@
-package restapi
+package api
 
 import (
 	"github.com/gin-gonic/gin"

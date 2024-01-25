@@ -3,6 +3,7 @@ package application
 import (
 	"github.com/google/uuid"
 	"github.com/mohamed-sawy/critch-backend/internal/application/core/entities"
+	"github.com/mohamed-sawy/critch-backend/internal/application/core/msgsrvc"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -164,4 +165,76 @@ func (app *App) UpdateMessage(msg any) error {
 
 func (app *App) DeleteMessage(msg any) error {
 	return app.db.DeleteMessage(msg)
+}
+
+func (app *App) SendMessages(incomingMessage *msgsrvc.IncomingMessage) error {
+	var outgoingMessage any
+	if incomingMessage.ServerID != uuid.Nil {
+		outgoingMessage = &entities.ServerMessage{
+			Message: entities.Message{
+				ChannelID:  incomingMessage.ChannelID,
+				SenderID:   incomingMessage.SenderID,
+				Content:    incomingMessage.Content,
+				Attachment: incomingMessage.Attachment,
+			},
+		}
+	} else {
+		outgoingMessage = &entities.DirectMessage{
+			Message: entities.Message{
+				ChannelID:  incomingMessage.ChannelID,
+				SenderID:   incomingMessage.SenderID,
+				Content:    incomingMessage.Content,
+				Attachment: incomingMessage.Attachment,
+			},
+		}
+	}
+
+	err := app.db.CreateMessage(outgoingMessage)
+	if err != nil {
+		return err
+	}
+
+	app.messagingService.Broadcast <- &msgsrvc.BroadcastMessage{
+		IsNotification: false,
+		ChannelId:      incomingMessage.ChannelID,
+		Message:        outgoingMessage,
+	}
+
+	return nil
+}
+
+func (app *App) ReceiveMessages(client *msgsrvc.Client) (any, bool) {
+	msg, ok := <-client.MessagingChannel
+	return msg, ok
+}
+
+func (app *App) ConnectWebsocket(clientId uuid.UUID) (*msgsrvc.Client, error) {
+	channelIds, err := app.db.GetUserChannelIds(clientId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverIds, err := app.db.GetUserServerIds(clientId)
+	if err != nil {
+		return nil, err
+	}
+
+	client := &msgsrvc.Client{
+		ID:               clientId,
+		MessagingChannel: make(chan any, 10),
+	}
+
+	app.messagingService.Connect <- &msgsrvc.NewClient{
+		ClientObj: client,
+		Servers:   serverIds,
+		Channels:  channelIds,
+	}
+
+	return client, nil
+}
+
+func (app *App) DisconnectWebsocket(client *msgsrvc.Client) {
+	app.messagingService.Disconnect <- client
+
+	close(client.MessagingChannel)
 }
