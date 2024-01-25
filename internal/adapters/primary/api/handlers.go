@@ -140,11 +140,7 @@ func (api *Adapter) getUserServers(ctx *gin.Context) {
 
 	serversData := make([]gin.H, len(*servers))
 	for idx, server := range *servers {
-		serversData[idx] = gin.H{
-			"server_id": server.ServerID,
-			"joined_at": server.JoinedAt,
-			"role":      server.Role,
-		}
+		serversData[idx] = getResponseServer(&server)
 	}
 
 	ctx.JSON(http.StatusOK, serversData)
@@ -167,9 +163,7 @@ func (api *Adapter) getUserChannels(ctx *gin.Context) {
 
 	channelsData := make([]gin.H, len(*channels))
 	for idx, channel := range *channels {
-		channelsData[idx] = gin.H{
-			"channel_id": channel.ChannelID,
-		}
+		channelsData[idx] = getResponseChannel(&channel, false)
 	}
 
 	ctx.JSON(http.StatusOK, channelsData)
@@ -297,11 +291,7 @@ func (api *Adapter) getServerMembers(ctx *gin.Context) {
 
 	membersData := make([]gin.H, len(*members))
 	for idx, member := range *members {
-		membersData[idx] = gin.H{
-			"user_id":   member.UserID,
-			"joined_at": member.JoinedAt,
-			"role":      member.Role,
-		}
+		membersData[idx] = getResponseUser(&member)
 	}
 
 	ctx.JSON(http.StatusOK, membersData)
@@ -368,9 +358,7 @@ func (api *Adapter) getServerChannels(ctx *gin.Context) {
 
 	channelsData := make([]gin.H, len(*channels))
 	for idx, channel := range *channels {
-		channelsData[idx] = gin.H{
-			"channel_id": channel.ID,
-		}
+		channelsData[idx] = getResponseChannel(&channel, true)
 	}
 
 	ctx.JSON(http.StatusOK, channelsData)

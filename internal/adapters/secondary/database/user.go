@@ -41,18 +41,42 @@ func (dbA *Adapter) UpdateUser(user *entities.User) error {
 	return dbA.db.Model(user).Omit("ID", "CreatedAt").Updates(user).Error
 }
 
-func (dbA *Adapter) GetUserServers(userId uuid.UUID, offset, limit int) (*[]entities.ServerMember, error) {
-	servers := &[]entities.ServerMember{}
-	err := dbA.db.Offset(offset).Limit(limit).Select("server_id", "role", "joined_at").
-		Find(servers, "user_id = ?", userId).Error
+func (dbA *Adapter) GetUserServers(userId uuid.UUID, offset, limit int) (*[]entities.Server, error) {
+	serverMembers := &[]entities.ServerMember{}
+	err := dbA.db.Offset(offset).Limit(limit).Select("server_id").
+		Find(serverMembers, "user_id = ?", userId).Error
+
+	if err != nil {
+		return nil, err
+	}
+
+	ids := make([]uuid.UUID, len(*serverMembers))
+	for idx, obj := range *serverMembers {
+		ids[idx] = obj.ServerID
+	}
+
+	servers := &[]entities.Server{}
+	err = dbA.db.Where("id IN ?", ids).Find(servers).Error
 
 	return servers, err
 }
 
-func (dbA *Adapter) GetUserDMChannels(userId uuid.UUID, offset, limit int) (*[]entities.DMChannelMember, error) {
-	channels := &[]entities.DMChannelMember{}
+func (dbA *Adapter) GetUserDMChannels(userId uuid.UUID, offset, limit int) (*[]entities.DMChannel, error) {
+	channelMembers := &[]entities.DMChannelMember{}
 	err := dbA.db.Offset(offset).Limit(limit).Select("channel_id").
-		Find(channels, "user_id = ?", userId).Error
+		Find(channelMembers, "user_id = ?", userId).Error
+
+	if err != nil {
+		return nil, err
+	}
+
+	ids := make([]uuid.UUID, len(*channelMembers))
+	for idx, obj := range *channelMembers {
+		ids[idx] = obj.ChannelID
+	}
+
+	channels := &[]entities.DMChannel{}
+	err = dbA.db.Where("id IN ?", ids).Find(channels).Error
 
 	return channels, err
 }

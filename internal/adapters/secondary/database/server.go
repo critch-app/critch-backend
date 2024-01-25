@@ -41,12 +41,24 @@ func (dbA *Adapter) UpdateServer(server *entities.Server) error {
 	return dbA.db.Model(server).Omit("ID", "CreatedAt").Updates(server).Error
 }
 
-func (dbA *Adapter) GetServerMembers(serverId uuid.UUID, offset, limit int) (*[]entities.ServerMember, error) {
-	members := &[]entities.ServerMember{}
+func (dbA *Adapter) GetServerMembers(serverId uuid.UUID, offset, limit int) (*[]entities.User, error) {
+	serverMembers := &[]entities.ServerMember{}
 	err := dbA.db.Offset(offset).Limit(limit).Select("user_id", "role", "joined_at").
-		Find(members, "server_id = ?", serverId).Error
+		Find(serverMembers, "server_id = ?", serverId).Error
 
-	return members, err
+	if err != nil {
+		return nil, err
+	}
+
+	ids := make([]uuid.UUID, len(*serverMembers))
+	for idx, obj := range *serverMembers {
+		ids[idx] = obj.UserID
+	}
+
+	users := &[]entities.User{}
+	err = dbA.db.Where("id IN ?", ids).Find(users).Error
+
+	return users, err
 }
 
 func (dbA *Adapter) AddServerMember(member *entities.ServerMember) error {

@@ -52,11 +52,11 @@ func (app *App) UpdateUser(user *entities.User) error {
 	return app.db.UpdateUser(user)
 }
 
-func (app *App) GetUserServers(userId uuid.UUID, offset, limit int) (*[]entities.ServerMember, error) {
+func (app *App) GetUserServers(userId uuid.UUID, offset, limit int) (*[]entities.Server, error) {
 	return app.db.GetUserServers(userId, offset, limit)
 }
 
-func (app *App) GetUserDMChannels(userId uuid.UUID, offset, limit int) (*[]entities.DMChannelMember, error) {
+func (app *App) GetUserDMChannels(userId uuid.UUID, offset, limit int) (*[]entities.DMChannel, error) {
 	return app.db.GetUserDMChannels(userId, offset, limit)
 }
 
@@ -95,7 +95,7 @@ func (app *App) UpdateServer(server *entities.Server) error {
 	return app.db.UpdateServer(server)
 }
 
-func (app *App) GetServerMembers(serverId uuid.UUID, offset, limit int) (*[]entities.ServerMember, error) {
+func (app *App) GetServerMembers(serverId uuid.UUID, offset, limit int) (*[]entities.User, error) {
 	return app.db.GetServerMembers(serverId, offset, limit)
 }
 

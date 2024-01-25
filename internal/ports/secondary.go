@@ -13,10 +13,10 @@ type DB interface {
 	GetUserByEmail(email string) (*entities.User, error)
 	GetAllUsers(offset, limit int) (*[]entities.User, error)
 	UpdateUser(user *entities.User) error
-	GetUserServers(userId uuid.UUID, offset, limit int) (*[]entities.ServerMember, error)
-	GetUserDMChannels(userId uuid.UUID, offset, limit int) (*[]entities.DMChannelMember, error)
+	GetUserServers(userId uuid.UUID, offset, limit int) (*[]entities.Server, error)
+	GetUserDMChannels(userId uuid.UUID, offset, limit int) (*[]entities.DMChannel, error)
 	GetUserChannelIds(userId uuid.UUID) (*[]uuid.UUID, error)
-	GetUserServerIds(userId uuid.UUID) (*[]uuid.UUID, error) //TODO: implement this
+	GetUserServerIds(userId uuid.UUID) (*[]uuid.UUID, error)
 	DeleteUser(id uuid.UUID) error
 
 	CreateServer(server *entities.Server) error
@@ -24,7 +24,7 @@ type DB interface {
 	GetServerByName(name string) (*entities.Server, error)
 	GetAllServers(offset, limit int) (*[]entities.Server, error)
 	UpdateServer(server *entities.Server) error
-	GetServerMembers(serverId uuid.UUID, offset, limit int) (*[]entities.ServerMember, error)
+	GetServerMembers(serverId uuid.UUID, offset, limit int) (*[]entities.User, error)
 	AddServerMember(member *entities.ServerMember) error
 	RemoveServerMember(serverId, userId uuid.UUID) error
 	GetServerChannels(serverId uuid.UUID, offset, limit int) (*[]entities.ServerChannel, error)
