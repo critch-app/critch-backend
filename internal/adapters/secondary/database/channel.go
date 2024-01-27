@@ -121,6 +121,7 @@ func validateChannelMembersType(members any) error {
 
 	return nil
 }
+
 func validateChannelMembersArrayType(members any) error {
 	switch members.(type) {
 	case *[]entities.ServerChannelMember:

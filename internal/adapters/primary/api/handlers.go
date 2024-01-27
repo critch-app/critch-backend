@@ -1,12 +1,13 @@
 package api
 
 import (
-	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
-	"github.com/mohamed-sawy/critch-backend/internal/application/core/entities"
 	"log"
 	"net/http"
 	"strconv"
+
+	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
+	"github.com/mohamed-sawy/critch-backend/internal/application/core/entities"
 )
 
 func (api *Adapter) login(ctx *gin.Context) {
@@ -540,7 +541,7 @@ func (api *Adapter) addChannelMember(ctx *gin.Context) {
 		return
 	}
 
-	serverId, exists := ctx.GetQuery("server_id")
+	serverId, exists := ctx.GetQuery("serverId")
 
 	var channelMember any
 	if exists {
@@ -584,7 +585,7 @@ func (api *Adapter) removeChannelMember(ctx *gin.Context) {
 		return
 	}
 
-	serverId, exists := ctx.GetQuery("server_id")
+	serverId, exists := ctx.GetQuery("serverId")
 
 	var channelMember any
 	if exists {
@@ -727,13 +728,13 @@ func (api *Adapter) updateMessage(ctx *gin.Context) {
 }
 
 func (api *Adapter) getServerMemberRole(ctx *gin.Context) {
-	serverId, err := uuid.Parse(ctx.Param("server-id"))
+	serverId, err := uuid.Parse(ctx.Query("serverId"))
 	if err != nil {
 		reportError(ctx, http.StatusBadRequest, err)
 		return
 	}
 
-	userId, err := uuid.Parse(ctx.Param("user-id"))
+	userId, err := uuid.Parse(ctx.Query("userId"))
 	if err != nil {
 		reportError(ctx, http.StatusBadRequest, err)
 		return
