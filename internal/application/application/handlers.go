@@ -111,8 +111,8 @@ func (app *App) RemoveServerMember(serverId, userId uuid.UUID) error {
 	return app.db.RemoveServerMember(serverId, userId)
 }
 
-func (app *App) GetServerChannels(serverId uuid.UUID, offset, limit int) (*[]entities.ServerChannel, error) {
-	return app.db.GetServerChannels(serverId, offset, limit)
+func (app *App) GetServerChannels(serverId, userId uuid.UUID, offset, limit int) (*[]entities.ServerChannel, error) {
+	return app.db.GetServerChannels(serverId, userId, offset, limit)
 }
 
 func (app *App) DeleteServer(id uuid.UUID) error {

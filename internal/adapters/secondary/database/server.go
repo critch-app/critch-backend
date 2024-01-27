@@ -74,10 +74,22 @@ func (dbA *Adapter) RemoveServerMember(serverId, userId uuid.UUID) error {
 	return dbA.db.Delete(member).Error
 }
 
-func (dbA *Adapter) GetServerChannels(serverId uuid.UUID, offset, limit int) (*[]entities.ServerChannel, error) {
+func (dbA *Adapter) GetServerChannels(serverId, userId uuid.UUID, offset, limit int) (*[]entities.ServerChannel, error) {
+	channelMember := &[]entities.ServerChannelMember{}
+	err := dbA.db.Offset(offset).Limit(limit).Select("channel_id").
+		Find(channelMember, "user_id = ? AND server_id = ?", userId, serverId).Error
+
+	if err != nil {
+		return nil, err
+	}
+
+	ids := make([]uuid.UUID, len(*channelMember))
+	for idx, obj := range *channelMember {
+		ids[idx] = obj.ChannelID
+	}
+
 	channels := &[]entities.ServerChannel{}
-	err := dbA.db.Offset(offset).Limit(limit).Omit("server_id").
-		Find(channels, "server_id = ?", serverId).Error
+	err = dbA.db.Where("id IN ?", ids).Find(channels).Error
 
 	return channels, err
 }

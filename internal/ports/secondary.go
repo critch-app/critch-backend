@@ -27,7 +27,7 @@ type DB interface {
 	GetServerMembers(serverId uuid.UUID, offset, limit int) (*[]entities.User, error)
 	AddServerMember(member *entities.ServerMember) error
 	RemoveServerMember(serverId, userId uuid.UUID) error
-	GetServerChannels(serverId uuid.UUID, offset, limit int) (*[]entities.ServerChannel, error)
+	GetServerChannels(serverId, userId uuid.UUID, offset, limit int) (*[]entities.ServerChannel, error)
 	DeleteServer(id uuid.UUID) error
 
 	CreateChannel(channel any) error

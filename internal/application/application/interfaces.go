@@ -25,7 +25,7 @@ type AppI interface {
 	GetServerMembers(serverId uuid.UUID, offset, limit int) (*[]entities.User, error)
 	AddServerMember(serverId, userId uuid.UUID) error
 	RemoveServerMember(serverId, userId uuid.UUID) error
-	GetServerChannels(serverId uuid.UUID, offset, limit int) (*[]entities.ServerChannel, error)
+	GetServerChannels(serverId, userId uuid.UUID, offset, limit int) (*[]entities.ServerChannel, error)
 	DeleteServer(id uuid.UUID) error
 
 	CreateChannel(channel any, userId uuid.UUID, isServerChannel bool) error

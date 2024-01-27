@@ -351,7 +351,9 @@ func (api *Adapter) getServerChannels(ctx *gin.Context) {
 
 	offset, limit := getPagination(ctx)
 
-	channels, err := api.app.GetServerChannels(serverId, offset, limit)
+	userId, _ := ctx.Get("user_id")
+
+	channels, err := api.app.GetServerChannels(serverId, userId.(uuid.UUID), offset, limit)
 	if err != nil {
 		reportError(ctx, http.StatusInternalServerError, err)
 		return
