@@ -408,7 +408,9 @@ func (api *Adapter) createChannel(ctx *gin.Context) {
 		return
 	}
 
-	err = api.app.CreateChannel(channel)
+	userId, _ := ctx.Get("user_id")
+
+	err = api.app.CreateChannel(channel, userId.(uuid.UUID), isServerChannel)
 	if err != nil {
 		reportError(ctx, http.StatusInternalServerError, err)
 		return

@@ -119,8 +119,29 @@ func (app *App) DeleteServer(id uuid.UUID) error {
 	return app.db.DeleteServer(id)
 }
 
-func (app *App) CreateChannel(channel any) error {
-	return app.db.CreateChannel(channel)
+func (app *App) CreateChannel(channel any, userId uuid.UUID, isServerChannel bool) error {
+	err := app.db.CreateChannel(channel)
+	if err != nil {
+		return err
+	}
+
+	var channelMember any
+	if isServerChannel {
+		channelMember = &entities.ServerChannelMember{
+			ChannelID: channel.(*entities.ServerChannel).Channel.ID,
+			ServerID:  channel.(*entities.ServerChannel).ServerID,
+			UserID:    userId,
+		}
+	} else {
+		channelMember = &entities.DMChannelMember{
+			ChannelID: channel.(*entities.DMChannel).Channel.ID,
+			UserID:    userId,
+		}
+	}
+
+	err = app.db.AddChannelMember(channelMember)
+
+	return err
 }
 
 func (app *App) GetChannel(channel any) error {
