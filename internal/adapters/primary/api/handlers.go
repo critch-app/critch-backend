@@ -904,7 +904,7 @@ func getResponseMessageArray(channelMessages any, isServerMessage bool) []gin.H 
 		messagesArray := channelMessages.(*[]entities.ServerMessage)
 		messagesData := make([]gin.H, len(*messagesArray))
 		for idx, message := range *messagesArray {
-			messagesData[idx] = getResponseMessage(message, isServerMessage)
+			messagesData[idx] = getResponseMessage(&message, isServerMessage)
 		}
 
 		return messagesData
@@ -913,7 +913,7 @@ func getResponseMessageArray(channelMessages any, isServerMessage bool) []gin.H 
 	messagesArray := channelMessages.(*[]entities.DirectMessage)
 	messagesData := make([]gin.H, len(*messagesArray))
 	for idx, message := range *messagesArray {
-		messagesData[idx] = getResponseMessage(message, isServerMessage)
+		messagesData[idx] = getResponseMessage(&message, isServerMessage)
 	}
 
 	return messagesData
