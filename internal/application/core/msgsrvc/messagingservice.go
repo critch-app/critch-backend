@@ -75,7 +75,10 @@ func (srvc *MessagingService) Run() {
 					}
 				}
 			} else if message.Type == MESSAGE {
-				outgoingMessage := map[string]any{"server_id": message.ServerId}
+				outgoingMessage := map[string]any{
+					"type":      MESSAGE,
+					"server_id": message.ServerId,
+				}
 				if message.ServerId == uuid.Nil {
 					outgoingMessage["server_id"] = nil
 				}
