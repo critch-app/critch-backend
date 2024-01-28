@@ -90,7 +90,7 @@ func sendMessages(client *connection, app application.AppI) {
 func reportWebsocketError(websocketConnection *websocket.Conn, err error) {
 	log.Println(err)
 	websocketConnection.WriteJSON(map[string]any{
-		"is_error": true,
-		"message":  err.Error(),
+		"type":    msgsrvc.ERROR,
+		"message": err.Error(),
 	})
 }

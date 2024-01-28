@@ -216,9 +216,10 @@ func (app *App) SendMessages(incomingMessage *msgsrvc.IncomingMessage) error {
 	}
 
 	app.messagingService.Broadcast <- &msgsrvc.BroadcastMessage{
-		IsNotification: false,
-		ChannelId:      incomingMessage.ChannelID,
-		Message:        outgoingMessage,
+		Type:      msgsrvc.MESSAGE,
+		ChannelId: incomingMessage.ChannelID,
+		ServerId:  incomingMessage.ServerID,
+		Message:   outgoingMessage,
 	}
 
 	return nil

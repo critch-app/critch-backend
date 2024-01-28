@@ -16,9 +16,10 @@ type NewClient struct {
 }
 
 type BroadcastMessage struct {
-	IsNotification bool
-	ChannelId      uuid.UUID
-	Message        any
+	Type      string
+	ChannelId uuid.UUID
+	ServerId  uuid.UUID
+	Message   any
 }
 
 type IncomingMessage struct {
@@ -28,3 +29,11 @@ type IncomingMessage struct {
 	Content    string    `json:"content" binding:"required"`
 	Attachment string    `json:"attachment"`
 }
+
+const (
+	ERROR        = "error"
+	NOTIFICATION = "notification"
+	MESSAGE      = "message"
+	LOGGED_IN    = "logged_in"
+	LOGGED_OUT   = "logged_out"
+)
