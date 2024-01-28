@@ -76,7 +76,7 @@ func (dbA *Adapter) GetChannelMessages(channelMessages any, channelId uuid.UUID,
 		return err
 	}
 
-	return dbA.db.Offset(offset).Limit(limit).Order("created_at").
+	return dbA.db.Offset(offset).Limit(limit).Order("sent_at").
 		Find(channelMessages, "channel_id = ?", channelId).Error
 }
 
