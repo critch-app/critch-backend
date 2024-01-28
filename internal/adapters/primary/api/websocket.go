@@ -1,8 +1,8 @@
 package api
 
 import (
+	"errors"
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
 	"github.com/mohamed-sawy/critch-backend/internal/application/application"
 	"github.com/mohamed-sawy/critch-backend/internal/application/core/msgsrvc"
@@ -24,15 +24,26 @@ func (api *Adapter) connectWebsocket(ctx *gin.Context) {
 		},
 	}
 
+	token, exists := ctx.GetQuery("token")
+	if !exists {
+		reportError(ctx, http.StatusBadRequest, errors.New("unauthorized"))
+		return
+	}
+
 	websocketConnection, err := upgrader.Upgrade(ctx.Writer, ctx.Request, nil)
 	if err != nil {
 		reportError(ctx, http.StatusInternalServerError, err)
 		return
 	}
 
-	clientID, _ := ctx.Get("user_id")
+	clientId, err := api.app.ValidateJWTToken(token)
+	if err != nil {
+		reportWebsocketError(websocketConnection, err)
+		websocketConnection.Close()
+		return
+	}
 
-	clientObj, err := api.app.ConnectWebsocket(clientID.(uuid.UUID))
+	clientObj, err := api.app.ConnectWebsocket(clientId)
 	if err != nil {
 		reportWebsocketError(websocketConnection, err)
 		websocketConnection.Close()
