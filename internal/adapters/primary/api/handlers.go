@@ -884,6 +884,8 @@ func getResponseMessage(message any, isServerMessage bool) gin.H {
 			"id":         messageModel.ID,
 			"content":    messageModel.Content,
 			"attachment": messageModel.Attachment,
+			"channel_id": messageModel.ChannelID,
+			"sender_id":  messageModel.SenderID,
 			"sent_at":    messageModel.SentAt,
 			"updated_at": messageModel.UpdatedAt,
 		}
@@ -894,6 +896,8 @@ func getResponseMessage(message any, isServerMessage bool) gin.H {
 		"id":         messageModel.ID,
 		"content":    messageModel.Content,
 		"attachment": messageModel.Attachment,
+		"channel_id": messageModel.ChannelID,
+		"sender_id":  messageModel.SenderID,
 		"sent_at":    messageModel.SentAt,
 		"updated_at": messageModel.UpdatedAt,
 	}
