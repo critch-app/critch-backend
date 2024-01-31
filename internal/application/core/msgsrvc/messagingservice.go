@@ -2,6 +2,7 @@ package msgsrvc
 
 import (
 	"github.com/google/uuid"
+	"github.com/mohamed-sawy/critch-backend/internal/application/core/entities"
 )
 
 type MessagingService struct {
@@ -43,22 +44,22 @@ func (srvc *MessagingService) Run() {
 			}
 
 			srvc.Broadcast <- &BroadcastMessage{
-				IsNotification: true,
+				Type: NOTIFICATION,
 				Message: map[string]any{
-					"is_notification": true,
-					"sender_id":       newClient.ClientObj.ID,
-					"logged_in":       true,
+					"type":      NOTIFICATION,
+					"sender_id": newClient.ClientObj.ID,
+					"action":    LOGGED_IN,
 				},
 			}
 		case client := <-srvc.Disconnect:
 			for _, server := range srvc.ServerClients {
 				delete(server, client.ID)
 				srvc.Broadcast <- &BroadcastMessage{
-					IsNotification: true,
+					Type: NOTIFICATION,
 					Message: map[string]any{
-						"is_notification": true,
-						"sender_id":       client.ID,
-						"logged_out":      true,
+						"type":      NOTIFICATION,
+						"sender_id": client.ID,
+						"action":    LOGGED_OUT,
 					},
 				}
 			}
@@ -67,16 +68,45 @@ func (srvc *MessagingService) Run() {
 				delete(channel, client.ID)
 			}
 		case message := <-srvc.Broadcast:
-			if message.IsNotification {
+			if message.Type == NOTIFICATION {
 				for _, server := range srvc.ServerClients {
 					for _, client := range server {
 						client.MessagingChannel <- message.Message
 					}
 				}
-			} else {
+			} else if message.Type == MESSAGE {
+				outgoingMessage := map[string]any{
+					"type":      MESSAGE,
+					"server_id": message.ServerId,
+				}
+				if message.ServerId == uuid.Nil {
+					outgoingMessage["server_id"] = nil
+				}
+
+				switch message.Message.(type) {
+				case *entities.ServerMessage:
+					messageModel := message.Message.(*entities.ServerMessage)
+					outgoingMessage["id"] = messageModel.ID
+					outgoingMessage["channel_id"] = messageModel.ChannelID
+					outgoingMessage["sender_id"] = messageModel.SenderID
+					outgoingMessage["content"] = messageModel.Content
+					outgoingMessage["attachment"] = messageModel.Attachment
+					outgoingMessage["sent_at"] = messageModel.SentAt
+					outgoingMessage["updated_at"] = messageModel.UpdatedAt
+				case *entities.DirectMessage:
+					messageModel := message.Message.(*entities.DirectMessage)
+					outgoingMessage["id"] = messageModel.ID
+					outgoingMessage["channel_id"] = messageModel.ChannelID
+					outgoingMessage["sender_id"] = messageModel.SenderID
+					outgoingMessage["content"] = messageModel.Content
+					outgoingMessage["attachment"] = messageModel.Attachment
+					outgoingMessage["sent_at"] = messageModel.SentAt
+					outgoingMessage["updated_at"] = messageModel.UpdatedAt
+				}
+
 				channel := srvc.ChannelClients[message.ChannelId]
 				for _, client := range channel {
-					client.MessagingChannel <- message.Message
+					client.MessagingChannel <- outgoingMessage
 				}
 			}
 		}

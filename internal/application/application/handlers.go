@@ -52,11 +52,11 @@ func (app *App) UpdateUser(user *entities.User) error {
 	return app.db.UpdateUser(user)
 }
 
-func (app *App) GetUserServers(userId uuid.UUID, offset, limit int) (*[]entities.ServerMember, error) {
+func (app *App) GetUserServers(userId uuid.UUID, offset, limit int) (*[]entities.Server, error) {
 	return app.db.GetUserServers(userId, offset, limit)
 }
 
-func (app *App) GetUserDMChannels(userId uuid.UUID, offset, limit int) (*[]entities.DMChannelMember, error) {
+func (app *App) GetUserDMChannels(userId uuid.UUID, offset, limit int) (*[]entities.DMChannel, error) {
 	return app.db.GetUserDMChannels(userId, offset, limit)
 }
 
@@ -95,7 +95,7 @@ func (app *App) UpdateServer(server *entities.Server) error {
 	return app.db.UpdateServer(server)
 }
 
-func (app *App) GetServerMembers(serverId uuid.UUID, offset, limit int) (*[]entities.ServerMember, error) {
+func (app *App) GetServerMembers(serverId uuid.UUID, offset, limit int) (*[]entities.User, error) {
 	return app.db.GetServerMembers(serverId, offset, limit)
 }
 
@@ -111,16 +111,37 @@ func (app *App) RemoveServerMember(serverId, userId uuid.UUID) error {
 	return app.db.RemoveServerMember(serverId, userId)
 }
 
-func (app *App) GetServerChannels(serverId uuid.UUID, offset, limit int) (*[]entities.ServerChannel, error) {
-	return app.db.GetServerChannels(serverId, offset, limit)
+func (app *App) GetServerChannels(serverId, userId uuid.UUID, offset, limit int) (*[]entities.ServerChannel, error) {
+	return app.db.GetServerChannels(serverId, userId, offset, limit)
 }
 
 func (app *App) DeleteServer(id uuid.UUID) error {
 	return app.db.DeleteServer(id)
 }
 
-func (app *App) CreateChannel(channel any) error {
-	return app.db.CreateChannel(channel)
+func (app *App) CreateChannel(channel any, userId uuid.UUID, isServerChannel bool) error {
+	err := app.db.CreateChannel(channel)
+	if err != nil {
+		return err
+	}
+
+	var channelMember any
+	if isServerChannel {
+		channelMember = &entities.ServerChannelMember{
+			ChannelID: channel.(*entities.ServerChannel).Channel.ID,
+			ServerID:  channel.(*entities.ServerChannel).ServerID,
+			UserID:    userId,
+		}
+	} else {
+		channelMember = &entities.DMChannelMember{
+			ChannelID: channel.(*entities.DMChannel).Channel.ID,
+			UserID:    userId,
+		}
+	}
+
+	err = app.db.AddChannelMember(channelMember)
+
+	return err
 }
 
 func (app *App) GetChannel(channel any) error {
@@ -195,9 +216,10 @@ func (app *App) SendMessages(incomingMessage *msgsrvc.IncomingMessage) error {
 	}
 
 	app.messagingService.Broadcast <- &msgsrvc.BroadcastMessage{
-		IsNotification: false,
-		ChannelId:      incomingMessage.ChannelID,
-		Message:        outgoingMessage,
+		Type:      msgsrvc.MESSAGE,
+		ChannelId: incomingMessage.ChannelID,
+		ServerId:  incomingMessage.ServerID,
+		Message:   outgoingMessage,
 	}
 
 	return nil
@@ -237,4 +259,8 @@ func (app *App) DisconnectWebsocket(client *msgsrvc.Client) {
 	app.messagingService.Disconnect <- client
 
 	close(client.MessagingChannel)
+}
+
+func (app *App) GetServerMemberRole(serverId, userId uuid.UUID) (string, error) {
+	return app.db.GetServerMemberRole(serverId, userId)
 }

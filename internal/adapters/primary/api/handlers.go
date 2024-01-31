@@ -1,12 +1,13 @@
 package api
 
 import (
-	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
-	"github.com/mohamed-sawy/critch-backend/internal/application/core/entities"
 	"log"
 	"net/http"
 	"strconv"
+
+	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
+	"github.com/mohamed-sawy/critch-backend/internal/application/core/entities"
 )
 
 func (api *Adapter) login(ctx *gin.Context) {
@@ -140,11 +141,7 @@ func (api *Adapter) getUserServers(ctx *gin.Context) {
 
 	serversData := make([]gin.H, len(*servers))
 	for idx, server := range *servers {
-		serversData[idx] = gin.H{
-			"server_id": server.ServerID,
-			"joined_at": server.JoinedAt,
-			"role":      server.Role,
-		}
+		serversData[idx] = getResponseServer(&server)
 	}
 
 	ctx.JSON(http.StatusOK, serversData)
@@ -167,9 +164,7 @@ func (api *Adapter) getUserChannels(ctx *gin.Context) {
 
 	channelsData := make([]gin.H, len(*channels))
 	for idx, channel := range *channels {
-		channelsData[idx] = gin.H{
-			"channel_id": channel.ChannelID,
-		}
+		channelsData[idx] = getResponseChannel(&channel, false)
 	}
 
 	ctx.JSON(http.StatusOK, channelsData)
@@ -297,11 +292,7 @@ func (api *Adapter) getServerMembers(ctx *gin.Context) {
 
 	membersData := make([]gin.H, len(*members))
 	for idx, member := range *members {
-		membersData[idx] = gin.H{
-			"user_id":   member.UserID,
-			"joined_at": member.JoinedAt,
-			"role":      member.Role,
-		}
+		membersData[idx] = getResponseUser(&member)
 	}
 
 	ctx.JSON(http.StatusOK, membersData)
@@ -360,7 +351,9 @@ func (api *Adapter) getServerChannels(ctx *gin.Context) {
 
 	offset, limit := getPagination(ctx)
 
-	channels, err := api.app.GetServerChannels(serverId, offset, limit)
+	userId, _ := ctx.Get("user_id")
+
+	channels, err := api.app.GetServerChannels(serverId, userId.(uuid.UUID), offset, limit)
 	if err != nil {
 		reportError(ctx, http.StatusInternalServerError, err)
 		return
@@ -368,9 +361,7 @@ func (api *Adapter) getServerChannels(ctx *gin.Context) {
 
 	channelsData := make([]gin.H, len(*channels))
 	for idx, channel := range *channels {
-		channelsData[idx] = gin.H{
-			"channel_id": channel.ID,
-		}
+		channelsData[idx] = getResponseChannel(&channel, true)
 	}
 
 	ctx.JSON(http.StatusOK, channelsData)
@@ -419,7 +410,9 @@ func (api *Adapter) createChannel(ctx *gin.Context) {
 		return
 	}
 
-	err = api.app.CreateChannel(channel)
+	userId, _ := ctx.Get("user_id")
+
+	err = api.app.CreateChannel(channel, userId.(uuid.UUID), isServerChannel)
 	if err != nil {
 		reportError(ctx, http.StatusInternalServerError, err)
 		return
@@ -552,7 +545,7 @@ func (api *Adapter) addChannelMember(ctx *gin.Context) {
 		return
 	}
 
-	serverId, exists := ctx.GetQuery("server_id")
+	serverId, exists := ctx.GetQuery("serverId")
 
 	var channelMember any
 	if exists {
@@ -596,7 +589,7 @@ func (api *Adapter) removeChannelMember(ctx *gin.Context) {
 		return
 	}
 
-	serverId, exists := ctx.GetQuery("server_id")
+	serverId, exists := ctx.GetQuery("serverId")
 
 	var channelMember any
 	if exists {
@@ -738,6 +731,30 @@ func (api *Adapter) updateMessage(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, getResponseMessage(message, isServerMessage))
 }
 
+func (api *Adapter) getServerMemberRole(ctx *gin.Context) {
+	serverId, err := uuid.Parse(ctx.Query("serverId"))
+	if err != nil {
+		reportError(ctx, http.StatusBadRequest, err)
+		return
+	}
+
+	userId, err := uuid.Parse(ctx.Query("userId"))
+	if err != nil {
+		reportError(ctx, http.StatusBadRequest, err)
+		return
+	}
+
+	role, err := api.app.GetServerMemberRole(serverId, userId)
+	if err != nil {
+		reportError(ctx, http.StatusNotFound, err)
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{
+		"role": role,
+	})
+}
+
 func getPagination(ctx *gin.Context) (offset int, limit int) {
 	const MIN_OFFSET = 0
 	const DEFAULT_OFFSET = 0
@@ -867,6 +884,8 @@ func getResponseMessage(message any, isServerMessage bool) gin.H {
 			"id":         messageModel.ID,
 			"content":    messageModel.Content,
 			"attachment": messageModel.Attachment,
+			"channel_id": messageModel.ChannelID,
+			"sender_id":  messageModel.SenderID,
 			"sent_at":    messageModel.SentAt,
 			"updated_at": messageModel.UpdatedAt,
 		}
@@ -877,6 +896,8 @@ func getResponseMessage(message any, isServerMessage bool) gin.H {
 		"id":         messageModel.ID,
 		"content":    messageModel.Content,
 		"attachment": messageModel.Attachment,
+		"channel_id": messageModel.ChannelID,
+		"sender_id":  messageModel.SenderID,
 		"sent_at":    messageModel.SentAt,
 		"updated_at": messageModel.UpdatedAt,
 	}
@@ -887,7 +908,7 @@ func getResponseMessageArray(channelMessages any, isServerMessage bool) []gin.H 
 		messagesArray := channelMessages.(*[]entities.ServerMessage)
 		messagesData := make([]gin.H, len(*messagesArray))
 		for idx, message := range *messagesArray {
-			messagesData[idx] = getResponseMessage(message, isServerMessage)
+			messagesData[idx] = getResponseMessage(&message, isServerMessage)
 		}
 
 		return messagesData
@@ -896,7 +917,7 @@ func getResponseMessageArray(channelMessages any, isServerMessage bool) []gin.H 
 	messagesArray := channelMessages.(*[]entities.DirectMessage)
 	messagesData := make([]gin.H, len(*messagesArray))
 	for idx, message := range *messagesArray {
-		messagesData[idx] = getResponseMessage(message, isServerMessage)
+		messagesData[idx] = getResponseMessage(&message, isServerMessage)
 	}
 
 	return messagesData

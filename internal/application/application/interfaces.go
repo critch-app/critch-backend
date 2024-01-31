@@ -13,8 +13,8 @@ type AppI interface {
 	GetUserByEmail(email string) (*entities.User, error)
 	GetAllUsers(offset, limit int) (*[]entities.User, error)
 	UpdateUser(user *entities.User) error
-	GetUserServers(userId uuid.UUID, offset, limit int) (*[]entities.ServerMember, error)
-	GetUserDMChannels(userId uuid.UUID, offset, limit int) (*[]entities.DMChannelMember, error)
+	GetUserServers(userId uuid.UUID, offset, limit int) (*[]entities.Server, error)
+	GetUserDMChannels(userId uuid.UUID, offset, limit int) (*[]entities.DMChannel, error)
 	DeleteUser(id uuid.UUID) error
 
 	CreateServer(server *entities.Server, OwnerID uuid.UUID) error
@@ -22,13 +22,13 @@ type AppI interface {
 	GetServerByName(name string) (*entities.Server, error)
 	GetAllServers(offset, limit int) (*[]entities.Server, error)
 	UpdateServer(server *entities.Server) error
-	GetServerMembers(serverId uuid.UUID, offset, limit int) (*[]entities.ServerMember, error)
+	GetServerMembers(serverId uuid.UUID, offset, limit int) (*[]entities.User, error)
 	AddServerMember(serverId, userId uuid.UUID) error
 	RemoveServerMember(serverId, userId uuid.UUID) error
-	GetServerChannels(serverId uuid.UUID, offset, limit int) (*[]entities.ServerChannel, error)
+	GetServerChannels(serverId, userId uuid.UUID, offset, limit int) (*[]entities.ServerChannel, error)
 	DeleteServer(id uuid.UUID) error
 
-	CreateChannel(channel any) error
+	CreateChannel(channel any, userId uuid.UUID, isServerChannel bool) error
 	GetChannel(channel any) error
 	GetAllChannels(channels any, offset, limit int) error
 	UpdateChannel(channel any) error
@@ -49,4 +49,6 @@ type AppI interface {
 
 	ConnectWebsocket(clientId uuid.UUID) (*msgsrvc.Client, error)
 	DisconnectWebsocket(client *msgsrvc.Client)
+
+	GetServerMemberRole(serverId, userId uuid.UUID) (string, error)
 }

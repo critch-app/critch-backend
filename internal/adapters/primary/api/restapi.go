@@ -34,6 +34,8 @@ func (api *Adapter) setupRouting() {
 	v1.POST("/users", api.signup)
 	v1.POST("/login", api.login)
 
+	v1.GET("/messaging-service", api.connectWebsocket)
+
 	authorized := v1.Group("/", api.authenticate)
 
 	authorized.GET("/users", api.getAllUsers)
@@ -67,5 +69,5 @@ func (api *Adapter) setupRouting() {
 	authorized.DELETE("/messages/:message-id", api.deleteMessage)
 	authorized.PATCH("/messages/:message-id", api.updateMessage)
 
-	authorized.GET("/messaging-service", api.connectWebsocket)
+	authorized.GET("/server-role", api.getServerMemberRole)
 }
