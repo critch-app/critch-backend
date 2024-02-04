@@ -7,7 +7,7 @@ import (
 
 type Channel struct {
 	ID          uuid.UUID `json:"id"`
-	Name        string    `json:"name" gorm:"unique;not null"`
+	Name        string    `json:"name" gorm:"not null"`
 	Description string    `json:"description"`
 	CreatedAt   time.Time `json:"created_at"`
 }
