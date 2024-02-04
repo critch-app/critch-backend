@@ -190,11 +190,11 @@ func (app *App) DeleteMessage(msg any) error {
 
 func (app *App) SendMessages(incomingMessage *msgsrvc.IncomingMessage) error {
 	var outgoingMessage any
-	if incomingMessage.ServerID != uuid.Nil {
+	if incomingMessage.ServerId != uuid.Nil {
 		outgoingMessage = &entities.ServerMessage{
 			Message: entities.Message{
-				ChannelID:  incomingMessage.ChannelID,
-				SenderID:   incomingMessage.SenderID,
+				ChannelID:  incomingMessage.ChannelId,
+				SenderID:   incomingMessage.SenderId,
 				Content:    incomingMessage.Content,
 				Attachment: incomingMessage.Attachment,
 			},
@@ -202,8 +202,8 @@ func (app *App) SendMessages(incomingMessage *msgsrvc.IncomingMessage) error {
 	} else {
 		outgoingMessage = &entities.DirectMessage{
 			Message: entities.Message{
-				ChannelID:  incomingMessage.ChannelID,
-				SenderID:   incomingMessage.SenderID,
+				ChannelID:  incomingMessage.ChannelId,
+				SenderID:   incomingMessage.SenderId,
 				Content:    incomingMessage.Content,
 				Attachment: incomingMessage.Attachment,
 			},
@@ -217,9 +217,21 @@ func (app *App) SendMessages(incomingMessage *msgsrvc.IncomingMessage) error {
 
 	app.messagingService.Broadcast <- &msgsrvc.BroadcastMessage{
 		Type:      msgsrvc.MESSAGE,
-		ChannelId: incomingMessage.ChannelID,
-		ServerId:  incomingMessage.ServerID,
+		ChannelId: incomingMessage.ChannelId,
+		ServerId:  incomingMessage.ServerId,
 		Message:   outgoingMessage,
+	}
+
+	return nil
+}
+
+func (app *App) SendNotification(notificationType string, notification any) error {
+	app.messagingService.Broadcast <- &msgsrvc.BroadcastMessage{
+		Type: msgsrvc.NOTIFICATION,
+		Message: map[string]any{
+			"type": notificationType,
+			"data": notification,
+		},
 	}
 
 	return nil

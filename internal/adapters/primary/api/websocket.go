@@ -1,6 +1,7 @@
 package api
 
 import (
+	"encoding/json"
 	"errors"
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
@@ -84,16 +85,48 @@ func sendMessages(client *connection, app application.AppI) {
 	}()
 
 	for {
-		message := &msgsrvc.IncomingMessage{SenderID: client.clientObj.ID}
-		err := client.websocketConnection.ReadJSON(message)
+		wsMessage := &webSocketMessage{}
+		err := client.websocketConnection.ReadJSON(wsMessage)
 		if err != nil {
 			reportWebsocketError(client.websocketConnection, err)
-			break
+			return
 		}
 
-		err = app.SendMessages(message)
-		if err != nil {
-			reportWebsocketError(client.websocketConnection, err)
+		switch wsMessage.MessageType {
+		case msgsrvc.MESSAGE:
+			message := &msgsrvc.IncomingMessage{}
+
+			err = json.Unmarshal(wsMessage.Data, &message)
+
+			if err != nil {
+				reportWebsocketError(client.websocketConnection, err)
+				continue
+			}
+
+			message.SenderId = client.clientObj.ID
+			err = app.SendMessages(message)
+			if err != nil {
+				reportWebsocketError(client.websocketConnection, err)
+				continue
+			}
+		case msgsrvc.JOIN_CHANNEL:
+			message := &msgsrvc.JoinChannel{}
+
+			err = json.Unmarshal(wsMessage.Data, &message)
+
+			if err != nil {
+				reportWebsocketError(client.websocketConnection, err)
+				continue
+			}
+
+			message.SenderId = client.clientObj.ID
+			err = app.SendNotification(wsMessage.MessageType, message)
+			if err != nil {
+				reportWebsocketError(client.websocketConnection, err)
+				continue
+			}
+		default:
+			log.Println("Unhandled websocket message: ", wsMessage.MessageType)
 		}
 	}
 }
@@ -101,7 +134,12 @@ func sendMessages(client *connection, app application.AppI) {
 func reportWebsocketError(websocketConnection *websocket.Conn, err error) {
 	log.Println(err)
 	websocketConnection.WriteJSON(map[string]any{
-		"type":    msgsrvc.ERROR,
+		"type":    "error",
 		"message": err.Error(),
 	})
+}
+
+type webSocketMessage struct {
+	MessageType string          `json:"type"  binding:"required"`
+	Data        json.RawMessage `json:"data"  binding:"required"`
 }

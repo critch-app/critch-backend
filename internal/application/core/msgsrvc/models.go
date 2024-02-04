@@ -23,16 +23,23 @@ type BroadcastMessage struct {
 }
 
 type IncomingMessage struct {
-	ServerID   uuid.UUID `json:"server_id"`
-	ChannelID  uuid.UUID `json:"channel_id" binding:"required"`
-	SenderID   uuid.UUID `json:"sender_id"`
+	ServerId   uuid.UUID `json:"server_id"`
+	ChannelId  uuid.UUID `json:"channel_id" binding:"required"`
+	SenderId   uuid.UUID `json:"sender_id"`
 	Content    string    `json:"content" binding:"required"`
 	Attachment string    `json:"attachment"`
+}
+
+type JoinChannel struct {
+	ServerId uuid.UUID   `json:"serverId" binding:"required"`
+	SenderId uuid.UUID   `json:"senderId"`
+	Channels []uuid.UUID `json:"channels" binding:"required"`
 }
 
 const (
 	ERROR        = "error"
 	NOTIFICATION = "notification"
+	JOIN_CHANNEL = "join_channel"
 	MESSAGE      = "message"
 	LOGGED_IN    = "logged_in"
 	LOGGED_OUT   = "logged_out"
