@@ -112,3 +112,28 @@ func (srvc *MessagingService) Run() {
 		}
 	}
 }
+
+func (srvc *MessagingService) AddNewChannels(clientObj *Client, serverId uuid.UUID, channels []uuid.UUID) {
+	if srvc.ServerClients[serverId] == nil {
+		srvc.ServerClients[serverId] = make(map[uuid.UUID]*Client)
+	}
+
+	srvc.ServerClients[serverId][clientObj.ID] = clientObj
+
+	for _, channelId := range channels {
+		if srvc.ChannelClients[channelId] == nil {
+			srvc.ChannelClients[channelId] = make(map[uuid.UUID]*Client)
+		}
+
+		srvc.ChannelClients[channelId][clientObj.ID] = clientObj
+	}
+
+	srvc.Broadcast <- &BroadcastMessage{
+		Type: NOTIFICATION,
+		Message: map[string]any{
+			"type":      NOTIFICATION,
+			"sender_id": clientObj.ID,
+			"action":    LOGGED_IN,
+		},
+	}
+}

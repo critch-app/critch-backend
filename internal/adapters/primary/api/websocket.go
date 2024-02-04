@@ -120,6 +120,9 @@ func sendMessages(client *connection, app application.AppI) {
 			}
 
 			message.SenderId = client.clientObj.ID
+
+			app.AddNewChannels(client.clientObj, message.ServerId, message.Channels)
+
 			err = app.SendNotification(wsMessage.MessageType, message)
 			if err != nil {
 				reportWebsocketError(client.websocketConnection, err)

@@ -273,6 +273,10 @@ func (app *App) DisconnectWebsocket(client *msgsrvc.Client) {
 	close(client.MessagingChannel)
 }
 
+func (app *App) AddNewChannels(clientObj *msgsrvc.Client, serverId uuid.UUID, channels []uuid.UUID) {
+	app.messagingService.AddNewChannels(clientObj, serverId, channels)
+}
+
 func (app *App) GetServerMemberRole(serverId, userId uuid.UUID) (string, error) {
 	return app.db.GetServerMemberRole(serverId, userId)
 }

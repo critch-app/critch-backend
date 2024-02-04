@@ -49,6 +49,7 @@ type AppI interface {
 	ReceiveMessages(client *msgsrvc.Client) (any, bool)
 
 	ConnectWebsocket(clientId uuid.UUID) (*msgsrvc.Client, error)
+	AddNewChannels(clientObj *msgsrvc.Client, serverId uuid.UUID, channels []uuid.UUID)
 	DisconnectWebsocket(client *msgsrvc.Client)
 
 	GetServerMemberRole(serverId, userId uuid.UUID) (string, error)
