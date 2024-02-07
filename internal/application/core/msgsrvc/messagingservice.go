@@ -112,3 +112,35 @@ func (srvc *MessagingService) Run() {
 		}
 	}
 }
+
+func (srvc *MessagingService) JoinChannels(clientObj *Client, serverId uuid.UUID, channels []uuid.UUID) {
+	if srvc.ServerClients[serverId] == nil {
+		srvc.ServerClients[serverId] = make(map[uuid.UUID]*Client)
+	}
+
+	srvc.ServerClients[serverId][clientObj.ID] = clientObj
+
+	for _, channelId := range channels {
+		if srvc.ChannelClients[channelId] == nil {
+			srvc.ChannelClients[channelId] = make(map[uuid.UUID]*Client)
+		}
+
+		srvc.ChannelClients[channelId][clientObj.ID] = clientObj
+	}
+}
+
+func (srvc *MessagingService) QuitChannel(clientObj *Client, channelId uuid.UUID) {
+	delete(srvc.ChannelClients[channelId], clientObj.ID)
+}
+
+func (srvc *MessagingService) QuitServer(clientObj *Client, serverId uuid.UUID) {
+	delete(srvc.ServerClients[serverId], clientObj.ID)
+}
+
+func (srvc *MessagingService) RemoveChannel(channelId uuid.UUID) {
+	delete(srvc.ChannelClients, channelId)
+}
+
+func (srvc *MessagingService) RemoveServer(serverId uuid.UUID) {
+	delete(srvc.ServerClients, serverId)
+}

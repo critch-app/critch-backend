@@ -23,17 +23,48 @@ type BroadcastMessage struct {
 }
 
 type IncomingMessage struct {
-	ServerID   uuid.UUID `json:"server_id"`
-	ChannelID  uuid.UUID `json:"channel_id" binding:"required"`
-	SenderID   uuid.UUID `json:"sender_id"`
+	ServerId   uuid.UUID `json:"server_id"`
+	ChannelId  uuid.UUID `json:"channel_id" binding:"required"`
+	SenderId   uuid.UUID `json:"sender_id"`
 	Content    string    `json:"content" binding:"required"`
 	Attachment string    `json:"attachment"`
 }
 
+type JoinChannel struct {
+	ServerId uuid.UUID   `json:"server_id" binding:"required"`
+	SenderId uuid.UUID   `json:"sender_id"`
+	Channels []uuid.UUID `json:"channels" binding:"required"`
+}
+
+type QuitChannel struct {
+	SenderId  uuid.UUID `json:"sender_id"`
+	ChannelId uuid.UUID `json:"channel_id" binding:"required"`
+}
+
+type QuitServer struct {
+	ServerId uuid.UUID `json:"server_id" binding:"required"`
+	SenderId uuid.UUID `json:"sender_id"`
+}
+
+type RemoveChannel struct {
+	SenderId  uuid.UUID `json:"sender_id"`
+	ChannelId uuid.UUID `json:"channel_id" binding:"required"`
+}
+
+type RemoveServer struct {
+	ServerId uuid.UUID `json:"server_id" binding:"required"`
+	SenderId uuid.UUID `json:"sender_id"`
+}
+
 const (
-	ERROR        = "error"
-	NOTIFICATION = "notification"
-	MESSAGE      = "message"
-	LOGGED_IN    = "logged_in"
-	LOGGED_OUT   = "logged_out"
+	ERROR          = "error"
+	NOTIFICATION   = "notification"
+	JOIN_CHANNEL   = "join_channel"
+	QUIT_CHANNEL   = "quit_channel"
+	QUIT_SERVER    = "quit_server"
+	REMOVE_CHANNEL = "remove_channel"
+	REMOVE_SERVER  = "remove_server"
+	MESSAGE        = "message"
+	LOGGED_IN      = "logged_in"
+	LOGGED_OUT     = "logged_out"
 )

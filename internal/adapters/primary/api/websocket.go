@@ -1,6 +1,7 @@
 package api
 
 import (
+	"encoding/json"
 	"errors"
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
@@ -84,16 +85,127 @@ func sendMessages(client *connection, app application.AppI) {
 	}()
 
 	for {
-		message := &msgsrvc.IncomingMessage{SenderID: client.clientObj.ID}
-		err := client.websocketConnection.ReadJSON(message)
+		wsMessage := &webSocketMessage{}
+		err := client.websocketConnection.ReadJSON(wsMessage)
 		if err != nil {
 			reportWebsocketError(client.websocketConnection, err)
-			break
+			return
 		}
 
-		err = app.SendMessages(message)
-		if err != nil {
-			reportWebsocketError(client.websocketConnection, err)
+		switch wsMessage.MessageType {
+		case msgsrvc.MESSAGE:
+			message := &msgsrvc.IncomingMessage{}
+
+			err = json.Unmarshal(wsMessage.Data, &message)
+
+			if err != nil {
+				reportWebsocketError(client.websocketConnection, err)
+				continue
+			}
+
+			message.SenderId = client.clientObj.ID
+			err = app.SendMessages(message)
+			if err != nil {
+				reportWebsocketError(client.websocketConnection, err)
+				continue
+			}
+		case msgsrvc.JOIN_CHANNEL:
+			message := &msgsrvc.JoinChannel{}
+
+			err = json.Unmarshal(wsMessage.Data, &message)
+
+			if err != nil {
+				reportWebsocketError(client.websocketConnection, err)
+				continue
+			}
+
+			message.SenderId = client.clientObj.ID
+
+			app.JoinChannels(client.clientObj, message.ServerId, message.Channels)
+
+			err = app.SendNotification(wsMessage)
+			if err != nil {
+				reportWebsocketError(client.websocketConnection, err)
+				continue
+			}
+		case msgsrvc.QUIT_CHANNEL:
+			message := &msgsrvc.QuitChannel{}
+
+			err = json.Unmarshal(wsMessage.Data, &message)
+
+			if err != nil {
+				reportWebsocketError(client.websocketConnection, err)
+				continue
+			}
+
+			message.SenderId = client.clientObj.ID
+
+			app.QuitChannel(client.clientObj, message.ChannelId)
+
+			err = app.SendNotification(wsMessage)
+			if err != nil {
+				reportWebsocketError(client.websocketConnection, err)
+				continue
+			}
+		case msgsrvc.QUIT_SERVER:
+			message := &msgsrvc.QuitServer{}
+
+			err = json.Unmarshal(wsMessage.Data, &message)
+
+			if err != nil {
+				reportWebsocketError(client.websocketConnection, err)
+				continue
+			}
+
+			message.SenderId = client.clientObj.ID
+
+			app.QuitServer(client.clientObj, message.ServerId)
+
+			err = app.SendNotification(wsMessage)
+			if err != nil {
+				reportWebsocketError(client.websocketConnection, err)
+				continue
+			}
+		case msgsrvc.REMOVE_CHANNEL:
+			message := &msgsrvc.RemoveChannel{}
+
+			err = json.Unmarshal(wsMessage.Data, &message)
+
+			if err != nil {
+				reportWebsocketError(client.websocketConnection, err)
+				continue
+			}
+
+			message.SenderId = client.clientObj.ID
+
+			app.RemoveChannel(message.ChannelId)
+
+			err = app.SendNotification(wsMessage)
+			if err != nil {
+				reportWebsocketError(client.websocketConnection, err)
+				continue
+			}
+		case msgsrvc.REMOVE_SERVER:
+			message := &msgsrvc.RemoveServer{}
+
+			err = json.Unmarshal(wsMessage.Data, &message)
+
+			if err != nil {
+				reportWebsocketError(client.websocketConnection, err)
+				continue
+			}
+
+			message.SenderId = client.clientObj.ID
+
+			app.RemoveServer(message.ServerId)
+
+			err = app.SendNotification(wsMessage)
+			if err != nil {
+				reportWebsocketError(client.websocketConnection, err)
+				continue
+			}
+		default:
+			log.Println("Unhandled websocket message: ", wsMessage.MessageType)
 		}
 	}
 }
@@ -101,7 +213,12 @@ func sendMessages(client *connection, app application.AppI) {
 func reportWebsocketError(websocketConnection *websocket.Conn, err error) {
 	log.Println(err)
 	websocketConnection.WriteJSON(map[string]any{
-		"type":    msgsrvc.ERROR,
+		"type":    "error",
 		"message": err.Error(),
 	})
+}
+
+type webSocketMessage struct {
+	MessageType string          `json:"type"  binding:"required"`
+	Data        json.RawMessage `json:"data"  binding:"required"`
 }

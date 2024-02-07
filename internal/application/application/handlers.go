@@ -190,11 +190,11 @@ func (app *App) DeleteMessage(msg any) error {
 
 func (app *App) SendMessages(incomingMessage *msgsrvc.IncomingMessage) error {
 	var outgoingMessage any
-	if incomingMessage.ServerID != uuid.Nil {
+	if incomingMessage.ServerId != uuid.Nil {
 		outgoingMessage = &entities.ServerMessage{
 			Message: entities.Message{
-				ChannelID:  incomingMessage.ChannelID,
-				SenderID:   incomingMessage.SenderID,
+				ChannelID:  incomingMessage.ChannelId,
+				SenderID:   incomingMessage.SenderId,
 				Content:    incomingMessage.Content,
 				Attachment: incomingMessage.Attachment,
 			},
@@ -202,8 +202,8 @@ func (app *App) SendMessages(incomingMessage *msgsrvc.IncomingMessage) error {
 	} else {
 		outgoingMessage = &entities.DirectMessage{
 			Message: entities.Message{
-				ChannelID:  incomingMessage.ChannelID,
-				SenderID:   incomingMessage.SenderID,
+				ChannelID:  incomingMessage.ChannelId,
+				SenderID:   incomingMessage.SenderId,
 				Content:    incomingMessage.Content,
 				Attachment: incomingMessage.Attachment,
 			},
@@ -217,9 +217,18 @@ func (app *App) SendMessages(incomingMessage *msgsrvc.IncomingMessage) error {
 
 	app.messagingService.Broadcast <- &msgsrvc.BroadcastMessage{
 		Type:      msgsrvc.MESSAGE,
-		ChannelId: incomingMessage.ChannelID,
-		ServerId:  incomingMessage.ServerID,
+		ChannelId: incomingMessage.ChannelId,
+		ServerId:  incomingMessage.ServerId,
 		Message:   outgoingMessage,
+	}
+
+	return nil
+}
+
+func (app *App) SendNotification(notificationObj any) error {
+	app.messagingService.Broadcast <- &msgsrvc.BroadcastMessage{
+		Type:    msgsrvc.NOTIFICATION,
+		Message: notificationObj,
 	}
 
 	return nil
@@ -259,6 +268,32 @@ func (app *App) DisconnectWebsocket(client *msgsrvc.Client) {
 	app.messagingService.Disconnect <- client
 
 	close(client.MessagingChannel)
+}
+
+func (app *App) JoinChannels(clientObj *msgsrvc.Client, serverId uuid.UUID, channels []uuid.UUID) {
+	app.messagingService.JoinChannels(clientObj, serverId, channels)
+}
+
+func (app *App) QuitChannel(clientObj *msgsrvc.Client, channelId uuid.UUID) {
+	app.messagingService.QuitChannel(clientObj, channelId)
+}
+
+func (app *App) QuitServer(clientObj *msgsrvc.Client, serverId uuid.UUID) {
+	channels, _ := app.GetServerChannels(serverId, clientObj.ID, 0, 1000)
+
+	for _, channel := range *channels {
+		app.QuitChannel(clientObj, channel.ID)
+	}
+
+	app.messagingService.QuitServer(clientObj, serverId)
+}
+
+func (app *App) RemoveChannel(channelId uuid.UUID) {
+	app.messagingService.RemoveChannel(channelId)
+}
+
+func (app *App) RemoveServer(serverId uuid.UUID) {
+	app.messagingService.RemoveServer(serverId)
 }
 
 func (app *App) GetServerMemberRole(serverId, userId uuid.UUID) (string, error) {
