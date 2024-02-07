@@ -25,7 +25,7 @@ func main() {
 		DBPORT = os.Getenv("DB_PORT")
 	)
 
-	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable TimeZone=GMT",
+	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=require TimeZone=GMT",
 		DBHOST, DBUSER, DBPASS, DBNAME, DBPORT)
 
 	var (
