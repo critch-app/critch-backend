@@ -1,13 +1,20 @@
 package api
 
 import (
-	"github.com/gin-gonic/gin"
 	"net/http"
 	"strings"
+
+	"github.com/gin-gonic/gin"
 )
 
 func (api *Adapter) authenticate(ctx *gin.Context) {
-	token := strings.Split(ctx.GetHeader("Authorization"), " ")[1]
+	authHeader := strings.Split(ctx.GetHeader("Authorization"), " ")
+	if len(authHeader) < 2 {
+		ctx.AbortWithStatus(http.StatusUnauthorized)
+		return
+	}
+
+	token := authHeader[1]
 
 	userId, err := api.app.ValidateJWTToken(token)
 	if err != nil {
