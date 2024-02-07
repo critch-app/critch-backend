@@ -2,21 +2,20 @@ package main
 
 import (
 	"fmt"
+	"log"
+	"os"
+
 	"github.com/joho/godotenv"
 	"github.com/mohamed-sawy/critch-backend/internal/adapters/primary/api"
 	"github.com/mohamed-sawy/critch-backend/internal/adapters/secondary/database"
 	"github.com/mohamed-sawy/critch-backend/internal/application/application"
+	"github.com/mohamed-sawy/critch-backend/internal/application/core/entities"
 	"github.com/mohamed-sawy/critch-backend/internal/application/core/msgsrvc"
 	"github.com/mohamed-sawy/critch-backend/internal/ports"
-	"log"
-	"os"
 )
 
 func main() {
 	err := godotenv.Load()
-	if err != nil {
-		log.Fatal("Error loading .env file")
-	}
 
 	var (
 		DBHOST = os.Getenv("DB_HOST")
@@ -40,6 +39,22 @@ func main() {
 
 	if err != nil {
 		log.Fatalf("DB Connection Failed: %s", err)
+	}
+
+	err = dbAdapter.Migrate(
+		&entities.Server{},
+		&entities.DMChannel{},
+		&entities.ServerChannel{},
+		&entities.User{},
+		&entities.DirectMessage{},
+		&entities.ServerMessage{},
+		&entities.ServerMember{},
+		&entities.DMChannelMember{},
+		&entities.ServerChannelMember{},
+	)
+
+	if err != nil {
+		log.Fatalf("Migration Failed: %s", err)
 	}
 
 	messagingService = msgsrvc.NewService()
