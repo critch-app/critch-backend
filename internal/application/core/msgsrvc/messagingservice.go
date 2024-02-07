@@ -113,7 +113,7 @@ func (srvc *MessagingService) Run() {
 	}
 }
 
-func (srvc *MessagingService) AddNewChannels(clientObj *Client, serverId uuid.UUID, channels []uuid.UUID) {
+func (srvc *MessagingService) JoinChannels(clientObj *Client, serverId uuid.UUID, channels []uuid.UUID) {
 	if srvc.ServerClients[serverId] == nil {
 		srvc.ServerClients[serverId] = make(map[uuid.UUID]*Client)
 	}
@@ -127,13 +127,20 @@ func (srvc *MessagingService) AddNewChannels(clientObj *Client, serverId uuid.UU
 
 		srvc.ChannelClients[channelId][clientObj.ID] = clientObj
 	}
+}
 
-	srvc.Broadcast <- &BroadcastMessage{
-		Type: NOTIFICATION,
-		Message: map[string]any{
-			"type":      NOTIFICATION,
-			"sender_id": clientObj.ID,
-			"action":    LOGGED_IN,
-		},
-	}
+func (srvc *MessagingService) QuitChannel(clientObj *Client, channelId uuid.UUID) {
+	delete(srvc.ChannelClients[channelId], clientObj.ID)
+}
+
+func (srvc *MessagingService) QuitServer(clientObj *Client, serverId uuid.UUID) {
+	delete(srvc.ServerClients[serverId], clientObj.ID)
+}
+
+func (srvc *MessagingService) RemoveChannel(channelId uuid.UUID) {
+	delete(srvc.ChannelClients, channelId)
+}
+
+func (srvc *MessagingService) RemoveServer(serverId uuid.UUID) {
+	delete(srvc.ServerClients, serverId)
 }

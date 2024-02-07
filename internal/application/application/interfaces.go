@@ -45,11 +45,15 @@ type AppI interface {
 	ValidateJWTToken(tokenString string) (uuid.UUID, error)
 
 	SendMessages(incomingMessage *msgsrvc.IncomingMessage) error
-	SendNotification(notificationType string, notification any) error
+	SendNotification(notificationObj any) error
 	ReceiveMessages(client *msgsrvc.Client) (any, bool)
 
 	ConnectWebsocket(clientId uuid.UUID) (*msgsrvc.Client, error)
-	AddNewChannels(clientObj *msgsrvc.Client, serverId uuid.UUID, channels []uuid.UUID)
+	JoinChannels(clientObj *msgsrvc.Client, serverId uuid.UUID, channels []uuid.UUID)
+	QuitChannel(clientObj *msgsrvc.Client, channelId uuid.UUID)
+	QuitServer(clientObj *msgsrvc.Client, serverId uuid.UUID)
+	RemoveChannel(channelId uuid.UUID)
+	RemoveServer(serverId uuid.UUID)
 	DisconnectWebsocket(client *msgsrvc.Client)
 
 	GetServerMemberRole(serverId, userId uuid.UUID) (string, error)

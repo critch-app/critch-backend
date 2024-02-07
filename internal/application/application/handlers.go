@@ -225,13 +225,10 @@ func (app *App) SendMessages(incomingMessage *msgsrvc.IncomingMessage) error {
 	return nil
 }
 
-func (app *App) SendNotification(notificationType string, notification any) error {
+func (app *App) SendNotification(notificationObj any) error {
 	app.messagingService.Broadcast <- &msgsrvc.BroadcastMessage{
-		Type: msgsrvc.NOTIFICATION,
-		Message: map[string]any{
-			"type": notificationType,
-			"data": notification,
-		},
+		Type:    msgsrvc.NOTIFICATION,
+		Message: notificationObj,
 	}
 
 	return nil
@@ -273,8 +270,30 @@ func (app *App) DisconnectWebsocket(client *msgsrvc.Client) {
 	close(client.MessagingChannel)
 }
 
-func (app *App) AddNewChannels(clientObj *msgsrvc.Client, serverId uuid.UUID, channels []uuid.UUID) {
-	app.messagingService.AddNewChannels(clientObj, serverId, channels)
+func (app *App) JoinChannels(clientObj *msgsrvc.Client, serverId uuid.UUID, channels []uuid.UUID) {
+	app.messagingService.JoinChannels(clientObj, serverId, channels)
+}
+
+func (app *App) QuitChannel(clientObj *msgsrvc.Client, channelId uuid.UUID) {
+	app.messagingService.QuitChannel(clientObj, channelId)
+}
+
+func (app *App) QuitServer(clientObj *msgsrvc.Client, serverId uuid.UUID) {
+	channels, _ := app.GetServerChannels(serverId, clientObj.ID, 0, 1000)
+
+	for _, channel := range *channels {
+		app.QuitChannel(clientObj, channel.ID)
+	}
+
+	app.messagingService.QuitServer(clientObj, serverId)
+}
+
+func (app *App) RemoveChannel(channelId uuid.UUID) {
+	app.messagingService.RemoveChannel(channelId)
+}
+
+func (app *App) RemoveServer(serverId uuid.UUID) {
+	app.messagingService.RemoveServer(serverId)
 }
 
 func (app *App) GetServerMemberRole(serverId, userId uuid.UUID) (string, error) {

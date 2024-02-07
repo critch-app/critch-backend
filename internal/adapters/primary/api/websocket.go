@@ -121,9 +121,85 @@ func sendMessages(client *connection, app application.AppI) {
 
 			message.SenderId = client.clientObj.ID
 
-			app.AddNewChannels(client.clientObj, message.ServerId, message.Channels)
+			app.JoinChannels(client.clientObj, message.ServerId, message.Channels)
 
-			err = app.SendNotification(wsMessage.MessageType, message)
+			err = app.SendNotification(wsMessage)
+			if err != nil {
+				reportWebsocketError(client.websocketConnection, err)
+				continue
+			}
+		case msgsrvc.QUIT_CHANNEL:
+			message := &msgsrvc.QuitChannel{}
+
+			err = json.Unmarshal(wsMessage.Data, &message)
+
+			if err != nil {
+				reportWebsocketError(client.websocketConnection, err)
+				continue
+			}
+
+			message.SenderId = client.clientObj.ID
+
+			app.QuitChannel(client.clientObj, message.ChannelId)
+
+			err = app.SendNotification(wsMessage)
+			if err != nil {
+				reportWebsocketError(client.websocketConnection, err)
+				continue
+			}
+		case msgsrvc.QUIT_SERVER:
+			message := &msgsrvc.QuitServer{}
+
+			err = json.Unmarshal(wsMessage.Data, &message)
+
+			if err != nil {
+				reportWebsocketError(client.websocketConnection, err)
+				continue
+			}
+
+			message.SenderId = client.clientObj.ID
+
+			app.QuitServer(client.clientObj, message.ServerId)
+
+			err = app.SendNotification(wsMessage)
+			if err != nil {
+				reportWebsocketError(client.websocketConnection, err)
+				continue
+			}
+		case msgsrvc.REMOVE_CHANNEL:
+			message := &msgsrvc.RemoveChannel{}
+
+			err = json.Unmarshal(wsMessage.Data, &message)
+
+			if err != nil {
+				reportWebsocketError(client.websocketConnection, err)
+				continue
+			}
+
+			message.SenderId = client.clientObj.ID
+
+			app.RemoveChannel(message.ChannelId)
+
+			err = app.SendNotification(wsMessage)
+			if err != nil {
+				reportWebsocketError(client.websocketConnection, err)
+				continue
+			}
+		case msgsrvc.REMOVE_SERVER:
+			message := &msgsrvc.RemoveServer{}
+
+			err = json.Unmarshal(wsMessage.Data, &message)
+
+			if err != nil {
+				reportWebsocketError(client.websocketConnection, err)
+				continue
+			}
+
+			message.SenderId = client.clientObj.ID
+
+			app.RemoveServer(message.ServerId)
+
+			err = app.SendNotification(wsMessage)
 			if err != nil {
 				reportWebsocketError(client.websocketConnection, err)
 				continue
