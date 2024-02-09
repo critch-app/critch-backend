@@ -2,8 +2,8 @@ package database
 
 import (
 	"errors"
+	"github.com/critch-app/critch-backend/internal/application/core/entities"
 	"github.com/google/uuid"
-	"github.com/mohamed-sawy/critch-backend/internal/application/core/entities"
 )
 
 func (dbA *Adapter) CreateMessage(msg any) error {

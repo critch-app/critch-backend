@@ -1,9 +1,9 @@
 package api
 
 import (
+	"github.com/critch-app/critch-backend/internal/application/application"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
-	"github.com/mohamed-sawy/critch-backend/internal/application/application"
 )
 
 type Adapter struct {

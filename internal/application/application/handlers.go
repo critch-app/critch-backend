@@ -1,9 +1,9 @@
 package application
 
 import (
+	"github.com/critch-app/critch-backend/internal/application/core/entities"
+	"github.com/critch-app/critch-backend/internal/application/core/msgsrvc"
 	"github.com/google/uuid"
-	"github.com/mohamed-sawy/critch-backend/internal/application/core/entities"
-	"github.com/mohamed-sawy/critch-backend/internal/application/core/msgsrvc"
 	"golang.org/x/crypto/bcrypt"
 )
 

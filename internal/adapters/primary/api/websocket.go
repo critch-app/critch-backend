@@ -3,10 +3,10 @@ package api
 import (
 	"encoding/json"
 	"errors"
+	"github.com/critch-app/critch-backend/internal/application/application"
+	"github.com/critch-app/critch-backend/internal/application/core/msgsrvc"
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
-	"github.com/mohamed-sawy/critch-backend/internal/application/application"
-	"github.com/mohamed-sawy/critch-backend/internal/application/core/msgsrvc"
 	"log"
 	"net/http"
 )

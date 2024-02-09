@@ -5,9 +5,9 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/critch-app/critch-backend/internal/application/core/entities"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-	"github.com/mohamed-sawy/critch-backend/internal/application/core/entities"
 )
 
 func (api *Adapter) login(ctx *gin.Context) {

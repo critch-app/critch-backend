@@ -5,13 +5,13 @@ import (
 	"log"
 	"os"
 
+	"github.com/critch-app/critch-backend/internal/adapters/primary/api"
+	"github.com/critch-app/critch-backend/internal/adapters/secondary/database"
+	"github.com/critch-app/critch-backend/internal/application/application"
+	"github.com/critch-app/critch-backend/internal/application/core/entities"
+	"github.com/critch-app/critch-backend/internal/application/core/msgsrvc"
+	"github.com/critch-app/critch-backend/internal/ports"
 	"github.com/joho/godotenv"
-	"github.com/mohamed-sawy/critch-backend/internal/adapters/primary/api"
-	"github.com/mohamed-sawy/critch-backend/internal/adapters/secondary/database"
-	"github.com/mohamed-sawy/critch-backend/internal/application/application"
-	"github.com/mohamed-sawy/critch-backend/internal/application/core/entities"
-	"github.com/mohamed-sawy/critch-backend/internal/application/core/msgsrvc"
-	"github.com/mohamed-sawy/critch-backend/internal/ports"
 )
 
 func main() {

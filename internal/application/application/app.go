@@ -1,8 +1,8 @@
 package application
 
 import (
-	"github.com/mohamed-sawy/critch-backend/internal/application/core/msgsrvc"
-	"github.com/mohamed-sawy/critch-backend/internal/ports"
+	"github.com/critch-app/critch-backend/internal/application/core/msgsrvc"
+	"github.com/critch-app/critch-backend/internal/ports"
 )
 
 type App struct {

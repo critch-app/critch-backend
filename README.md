@@ -5,7 +5,7 @@ through proper, simple, and efficient communication process.
 ## Installation
 1. download the project to your machine
 ```bash
-git clone https://github.com/Mohamed-Sawy/critch-backend.git
+git clone https://github.com/critch-app/critch-backend.git
 ```
 
 2. change your directory to the project folder

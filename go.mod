@@ -1,4 +1,4 @@
-module github.com/mohamed-sawy/critch-backend
+module github.com/critch-app/critch-backend
 
 go 1.21
 
