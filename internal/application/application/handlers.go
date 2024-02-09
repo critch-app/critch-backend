@@ -225,10 +225,11 @@ func (app *App) SendMessages(incomingMessage *msgsrvc.IncomingMessage) error {
 	return nil
 }
 
-func (app *App) SendNotification(notificationObj any) error {
+func (app *App) SendNotification(notificationObj any, serverId uuid.UUID) error {
 	app.messagingService.Broadcast <- &msgsrvc.BroadcastMessage{
-		Type:    msgsrvc.NOTIFICATION,
-		Message: notificationObj,
+		Type:     msgsrvc.NOTIFICATION,
+		ServerId: serverId,
+		Message:  notificationObj,
 	}
 
 	return nil

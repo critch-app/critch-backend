@@ -45,7 +45,7 @@ type AppI interface {
 	ValidateJWTToken(tokenString string) (uuid.UUID, error)
 
 	SendMessages(incomingMessage *msgsrvc.IncomingMessage) error
-	SendNotification(notificationObj any) error
+	SendNotification(notificationObj any, serverId uuid.UUID) error
 	ReceiveMessages(client *msgsrvc.Client) (any, bool)
 
 	ConnectWebsocket(clientId uuid.UUID) (*msgsrvc.Client, error)

@@ -43,25 +43,27 @@ func (srvc *MessagingService) Run() {
 				srvc.ChannelClients[channelId][newClient.ClientObj.ID] = newClient.ClientObj
 			}
 
-			srvc.Broadcast <- &BroadcastMessage{
-				Type: NOTIFICATION,
-				Message: map[string]any{
-					"type":      NOTIFICATION,
-					"sender_id": newClient.ClientObj.ID,
-					"action":    LOGGED_IN,
-				},
-			}
+			//srvc.Broadcast <- &BroadcastMessage{
+			//	Type: NOTIFICATION,
+			//	Message: map[string]any{
+			//		"type": LOGGED_IN,
+			//		"data": map[string]any{
+			//			"sender_id": newClient.ClientObj.ID,
+			//		},
+			//	},
+			//}
 		case client := <-srvc.Disconnect:
 			for _, server := range srvc.ServerClients {
 				delete(server, client.ID)
-				srvc.Broadcast <- &BroadcastMessage{
-					Type: NOTIFICATION,
-					Message: map[string]any{
-						"type":      NOTIFICATION,
-						"sender_id": client.ID,
-						"action":    LOGGED_OUT,
-					},
-				}
+				//srvc.Broadcast <- &BroadcastMessage{
+				//	Type: NOTIFICATION,
+				//	Message: map[string]any{
+				//		"type": LOGGED_OUT,
+				//		"data": map[string]any{
+				//			"sender_id": client.ID,
+				//		},
+				//	},
+				//}
 			}
 
 			for _, channel := range srvc.ChannelClients {
@@ -69,14 +71,12 @@ func (srvc *MessagingService) Run() {
 			}
 		case message := <-srvc.Broadcast:
 			if message.Type == NOTIFICATION {
-				for _, server := range srvc.ServerClients {
-					for _, client := range server {
-						client.MessagingChannel <- message.Message
-					}
+				server := srvc.ServerClients[message.ServerId]
+				for _, client := range server {
+					client.MessagingChannel <- message.Message
 				}
 			} else if message.Type == MESSAGE {
 				outgoingMessage := map[string]any{
-					"type":      MESSAGE,
 					"server_id": message.ServerId,
 				}
 				if message.ServerId == uuid.Nil {
@@ -106,7 +106,10 @@ func (srvc *MessagingService) Run() {
 
 				channel := srvc.ChannelClients[message.ChannelId]
 				for _, client := range channel {
-					client.MessagingChannel <- outgoingMessage
+					client.MessagingChannel <- map[string]any{
+						"type": MESSAGE,
+						"data": outgoingMessage,
+					}
 				}
 			}
 		}

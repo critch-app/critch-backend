@@ -123,7 +123,7 @@ func sendMessages(client *connection, app application.AppI) {
 
 			app.JoinChannels(client.clientObj, message.ServerId, message.Channels)
 
-			err = app.SendNotification(wsMessage)
+			err = app.SendNotification(wsMessage, message.ServerId)
 			if err != nil {
 				reportWebsocketError(client.websocketConnection, err)
 				continue
@@ -142,7 +142,7 @@ func sendMessages(client *connection, app application.AppI) {
 
 			app.QuitChannel(client.clientObj, message.ChannelId)
 
-			err = app.SendNotification(wsMessage)
+			err = app.SendNotification(wsMessage, message.ServerId)
 			if err != nil {
 				reportWebsocketError(client.websocketConnection, err)
 				continue
@@ -161,7 +161,7 @@ func sendMessages(client *connection, app application.AppI) {
 
 			app.QuitServer(client.clientObj, message.ServerId)
 
-			err = app.SendNotification(wsMessage)
+			err = app.SendNotification(wsMessage, message.ServerId)
 			if err != nil {
 				reportWebsocketError(client.websocketConnection, err)
 				continue
@@ -180,7 +180,7 @@ func sendMessages(client *connection, app application.AppI) {
 
 			app.RemoveChannel(message.ChannelId)
 
-			err = app.SendNotification(wsMessage)
+			err = app.SendNotification(wsMessage, message.ServerId)
 			if err != nil {
 				reportWebsocketError(client.websocketConnection, err)
 				continue
@@ -199,7 +199,7 @@ func sendMessages(client *connection, app application.AppI) {
 
 			app.RemoveServer(message.ServerId)
 
-			err = app.SendNotification(wsMessage)
+			err = app.SendNotification(wsMessage, message.ServerId)
 			if err != nil {
 				reportWebsocketError(client.websocketConnection, err)
 				continue
@@ -213,8 +213,10 @@ func sendMessages(client *connection, app application.AppI) {
 func reportWebsocketError(websocketConnection *websocket.Conn, err error) {
 	log.Println(err)
 	websocketConnection.WriteJSON(map[string]any{
-		"type":    "error",
-		"message": err.Error(),
+		"type": "error",
+		"data": map[string]any{
+			"message": err.Error(),
+		},
 	})
 }
 

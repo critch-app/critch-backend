@@ -39,6 +39,7 @@ type JoinChannel struct {
 type QuitChannel struct {
 	SenderId  uuid.UUID `json:"sender_id"`
 	ChannelId uuid.UUID `json:"channel_id" binding:"required"`
+	ServerId  uuid.UUID `json:"server_id" binding:"required"`
 }
 
 type QuitServer struct {
@@ -49,6 +50,7 @@ type QuitServer struct {
 type RemoveChannel struct {
 	SenderId  uuid.UUID `json:"sender_id"`
 	ChannelId uuid.UUID `json:"channel_id" binding:"required"`
+	ServerId  uuid.UUID `json:"server_id" binding:"required"`
 }
 
 type RemoveServer struct {
